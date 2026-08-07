@@ -439,8 +439,9 @@
                 return;
             }
 
-            cartSummary.textContent = `${count} producto(s) en carrito • Total: $${total.toFixed(2)}`;
-            cartWindowSummary.textContent = `${count} artículo(s) listo(s) para enviar.`;
+            const productLabel = count === 1 ? 'producto' : 'productos';
+            cartSummary.textContent = `Llevas ${count} ${productLabel} • Total: $${total.toFixed(2)}`;
+            cartWindowSummary.textContent = `Llevas ${count} ${productLabel} • Total: $${total.toFixed(2)}`;
             cartTotal.textContent = `$${total.toFixed(2)}`;
             checkoutBtn.href = wsLink;
             renderCartItems();
