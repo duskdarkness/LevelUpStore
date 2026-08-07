@@ -351,9 +351,49 @@
             { cat: "Steam Gift Cards USD", sub: "Servicios Digitales", item: "200 USD", price: "258,467" }
         ];
 
+        const cart = [];
+        const cartPanel = document.getElementById('cartPanel');
+        const cartSummary = document.getElementById('cartSummary');
+        const checkoutBtn = document.getElementById('checkoutBtn');
+        const clearCartBtn = document.getElementById('clearCartBtn');
         const grid = document.getElementById('productGrid');
         const filters = document.getElementById('filterContainer');
         const search = document.getElementById('searchInput');
+
+        function addToCart(item) {
+            cart.push({ ...item });
+            updateCart();
+        }
+
+        function updateCart() {
+            if (cart.length === 0) {
+                cartPanel.classList.add('hidden');
+                cartSummary.textContent = 'Aún no has agregado productos.';
+                checkoutBtn.href = wsLink;
+                return;
+            }
+
+            cartPanel.classList.remove('hidden');
+            const total = cart.reduce((sum, item) => sum + Number(item.price.replace(',', '.')), 0);
+            const list = cart.map((item, index) => `${index + 1}. ${item.item} - $${item.price}`).join('\n');
+            cartSummary.textContent = `${cart.length} producto(s) en el carrito. Total: $${total.toFixed(2)}.`;
+            const message = encodeURIComponent(`Hola, quiero este pedido:\n${list}\nTotal: $${total.toFixed(2)}`);
+            checkoutBtn.href = `https://api.whatsapp.com/send?text=${message}`;
+        }
+
+        clearCartBtn.addEventListener('click', () => {
+            cart.length = 0;
+            updateCart();
+        });
+
+        grid.addEventListener('click', e => {
+            const btn = e.target.closest('.add-to-cart-btn');
+            if (!btn) return;
+            const index = Number(btn.dataset.idx);
+            if (!Number.isNaN(index)) {
+                addToCart(data[index]);
+            }
+        });
 
         const uniqueCats = [...new Set(data.map(i => i.cat))];
         uniqueCats.forEach(cat => {
@@ -387,14 +427,17 @@
                                 </div>
                                 <h3 class="text-lg font-bold text-white leading-tight mb-4">${i.item}</h3>
                             </div>
-                            <div class="flex items-end justify-between border-t border-slate-800/50 pt-3">
+                            <div class="flex items-end justify-between border-t border-slate-800/50 pt-3 gap-2">
                                 <div>
                                     <span class="block text-[10px] text-slate-500 uppercase">Precio USD</span>
                                     <span class="price-tag text-2xl font-black">$${i.price}</span>
                                 </div>
-                                <a href="${wsLink}" target="_blank" class="h-10 w-10 rounded-lg bg-slate-800 hover:bg-cyan-500 hover:text-black transition-all flex items-center justify-center group shadow-lg">
-                                    <i class="fab fa-whatsapp text-lg group-hover:scale-110"></i>
-                                </a>
+                                <div class="flex items-center gap-2">
+                                    <button data-idx="${data.indexOf(i)}" class="add-to-cart-btn px-3 py-2 rounded-full bg-cyan-500 text-black font-semibold hover:bg-cyan-400 transition text-sm">Agregar</button>
+                                    <a href="https://api.whatsapp.com/send?text=${encodeURIComponent(`Hola, quiero este pedido:\n1. ${i.item} - $${i.price}\nTotal: $${i.price}`)}" target="_blank" class="h-10 w-10 rounded-lg bg-slate-800 hover:bg-cyan-500 hover:text-black transition-all flex items-center justify-center group shadow-lg">
+                                        <i class="fab fa-whatsapp text-lg group-hover:scale-110"></i>
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     `;
@@ -412,4 +455,5 @@
         });
 
         render();
+        updateCart();
     

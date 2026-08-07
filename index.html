@@ -86,6 +86,20 @@
             </div>
         </div>
 
+        <!-- Carrito -->
+        <div id="cartPanel" class="glass rounded-xl border border-slate-700 p-4 mb-6 hidden">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <h2 class="text-lg font-bold text-white">Carrito de compras</h2>
+                    <p id="cartSummary" class="text-slate-400 text-sm">Aún no has agregado productos.</p>
+                </div>
+                <div class="flex gap-2 items-center">
+                    <button id="clearCartBtn" class="px-4 py-2 rounded-full bg-slate-800 hover:bg-red-600 transition text-white text-sm">Vaciar carrito</button>
+                    <a id="checkoutBtn" href="#" target="_blank" class="px-4 py-2 rounded-full bg-cyan-400 hover:bg-cyan-300 transition text-black font-bold text-sm">Enviar pedido por WhatsApp</a>
+                </div>
+            </div>
+        </div>
+
         <!-- Grid de Productos -->
         <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             <!-- Cargado por JS -->
