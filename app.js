@@ -431,12 +431,13 @@
             if (cart.length === 0) return 'Hola, quiero hacer un pedido.';
 
             const lines = cart.map(item => {
-                const price = Number(item.price.replace(',', '.')).toFixed(2);
-                return `• ${item.qty}x ${item.item} (${item.cat} - ${item.sub}) - $${price}`;
+                const unitPrice = Number(item.price.replace(',', '.')).toFixed(2);
+                const subtotal = (Number(item.price.replace(',', '.')) * item.qty).toFixed(2);
+                return `• ${item.qty}x ${item.item} (${item.cat} - ${item.sub}) | C/U: $${unitPrice} | Subtotal: $${subtotal}`;
             });
 
             const total = cart.reduce((sum, item) => sum + Number(item.price.replace(',', '.')) * item.qty, 0).toFixed(2);
-            return `Hola, deseo pedir:\n${lines.join('\n')}\nTotal: $${total}`;
+            return `Hola, deseo realizar el siguiente pedido:\n\n${lines.join('\n')}\n\n*Total a pagar: $${total}*`;
         }
 
         function updateWhatsAppLinks() {

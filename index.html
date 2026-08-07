@@ -44,38 +44,44 @@
             gap: 0.75rem;
         }
         #sidebar {
-            position: relative;
+            position: sticky;
+            top: 100px;
+            align-self: start;
+            height: fit-content;
+            transition: all 0.3s ease;
         }
         .sidebar-toggle-btn {
-            position: fixed;
-            top: 50%;
-            left: calc(280px + 12px);
-            transform: translateY(-50%);
+            position: absolute;
+            top: 20px;
+            right: -18px;
             z-index: 9999;
-            width: 48px;
-            height: 48px;
+            width: 40px;
+            height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
             border: 1px solid rgba(255,255,255,0.08);
         }
         .sidebar-collapsed {
-            width: 96px;
-            min-width: 96px;
+            width: 92px;
+            min-width: 92px;
+            padding: 1.25rem 0.75rem !important;
         }
         .sidebar-collapsed .sidebar-header h2,
         .sidebar-collapsed .sidebar-body {
             display: none;
         }
         .sidebar-collapsed .sidebar-toggle-btn {
-            left: calc(96px + 12px);
+            right: 20px;
         }
         @media (max-width: 1024px) {
+            #sidebar {
+                position: relative;
+                top: 0;
+            }
             .sidebar-toggle-btn {
-                left: 18px;
-                top: auto;
-                bottom: 120px;
-                transform: none;
+                right: 16px;
+                top: 16px;
             }
         }
         .category-pill {
@@ -120,7 +126,7 @@
         </div>
     </nav>
 
-    <main class="min-h-screen w-full grid lg:grid-cols-[auto_minmax(0,1fr)] gap-6">
+    <main class="min-h-screen w-full grid lg:grid-cols-[280px_minmax(0,1fr)] gap-6">
         <aside id="sidebar" class="glass rounded-3xl border border-slate-700 p-6 shadow-xl">
             <div class="sidebar-header mb-6">
                 <h2 class="text-xl font-bold text-white mb-0">Buscar</h2>
