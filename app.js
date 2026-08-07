@@ -357,7 +357,6 @@
         const cartItems = document.getElementById('cartItems');
         const cartTotal = document.getElementById('cartTotal');
         const checkoutBtn = document.getElementById('checkoutBtn');
-        const clearCartBtn = document.getElementById('clearCartBtn');
         const clearCartBtnWindow = document.getElementById('clearCartBtnWindow');
         const cartWidgetBtn = document.getElementById('cartWidgetBtn');
         const cartWidgetSummary = document.getElementById('cartWidgetSummary');
@@ -481,11 +480,6 @@
             if (e.target === cartWindow) {
                 closeCart();
             }
-        });
-
-        clearCartBtn.addEventListener('click', () => {
-            cart.length = 0;
-            updateCart();
         });
 
         clearCartBtnWindow.addEventListener('click', () => {
