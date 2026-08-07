@@ -87,7 +87,7 @@
         ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
     </style>
 </head>
-<body class="min-h-screen pb-10">
+<body class="min-h-screen pb-24 overflow-x-hidden">
 
     <!-- Navbar -->
     <nav class="sticky top-0 z-50 glass px-6 py-4 mb-6">
@@ -105,72 +105,77 @@
         </div>
     </nav>
 
-    <main class="max-w-7xl mx-auto px-6">
-        <div class="grid lg:grid-cols-[280px_minmax(0,1fr)] gap-6">
-            <aside id="sidebar" class="glass rounded-3xl border border-slate-700 p-6 shadow-xl">
-                <div class="sidebar-header mb-6">
-                    <h2 class="text-xl font-bold text-white mb-0">Buscar</h2>
-                    <button id="toggleSidebarBtn" class="collapse-btn rounded-full bg-slate-800 px-3 py-2 text-sm text-slate-200 hover:bg-slate-700 transition">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                </div>
-                <div id="sidebarBody" class="sidebar-body">
-                    <div class="mb-6">
-                        <div class="relative">
-                            <input type="text" id="searchInput" placeholder="Buscar juego o tarjeta..."
-                                class="w-full bg-slate-900/80 border border-slate-700 rounded-full py-3 pl-12 pr-4 focus:outline-none focus:border-cyan-400 transition-all text-base text-white">
-                            <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"></i>
-                        </div>
-                    </div>
-                    <div class="mb-6">
-                        <h3 class="text-sm uppercase tracking-[0.3em] text-slate-400 mb-4">Categorías</h3>
-                        <div id="filterContainer" class="flex flex-col gap-2 sidebar-scroll pr-2">
-                            <button class="category-pill active px-4 py-3 rounded-2xl text-[11px] uppercase tracking-wider text-slate-200 text-left" data-cat="all">Todos</button>
-                        </div>
-                    </div>
-                    <div class="glass rounded-3xl bg-slate-950/90 border border-slate-700 p-4 shadow-inner">
-                        <p class="text-slate-400 text-sm mb-3">Resumen rápido</p>
-                        <p id="cartSummary" class="text-white font-semibold">Aún no has agregado productos.</p>
-                        <div class="mt-4 flex gap-2">
-                            <button id="clearCartBtn" class="flex-1 rounded-full bg-slate-800 hover:bg-red-600 transition px-4 py-2 text-sm font-semibold text-white">Vaciar</button>
-                            <button id="openCartBtnMobile" class="flex-1 rounded-full bg-cyan-500 hover:bg-cyan-400 transition px-4 py-2 text-sm font-semibold text-black">Carrito</button>
-                        </div>
+    <main class="min-h-screen w-full grid lg:grid-cols-[auto_minmax(0,1fr)] gap-6">
+        <aside id="sidebar" class="glass rounded-3xl border border-slate-700 p-6 shadow-xl">
+            <div class="sidebar-header mb-6">
+                <h2 class="text-xl font-bold text-white mb-0">Buscar</h2>
+                <button id="toggleSidebarBtn" class="collapse-btn rounded-full bg-slate-800 px-3 py-2 text-sm text-slate-200 hover:bg-slate-700 transition">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+            </div>
+            <div id="sidebarBody" class="sidebar-body">
+                <div class="mb-6">
+                    <div class="relative">
+                        <input type="text" id="searchInput" placeholder="Buscar juego o tarjeta..."
+                            class="w-full bg-slate-900/80 border border-slate-700 rounded-full py-3 pl-12 pr-4 focus:outline-none focus:border-cyan-400 transition-all text-base text-white">
+                        <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"></i>
                     </div>
                 </div>
-            </aside>
+                <div class="mb-6">
+                    <h3 class="text-sm uppercase tracking-[0.3em] text-slate-400 mb-4">Categorías</h3>
+                    <div id="filterContainer" class="flex flex-col gap-2 sidebar-scroll pr-2">
+                        <button class="category-pill active px-4 py-3 rounded-2xl text-[11px] uppercase tracking-wider text-slate-200 text-left" data-cat="all">Todos</button>
+                    </div>
+                </div>
+                <div class="glass rounded-3xl bg-slate-950/90 border border-slate-700 p-4 shadow-inner">
+                    <p class="text-slate-400 text-sm mb-3">Resumen rápido</p>
+                    <p id="cartSummary" class="text-white font-semibold">Aún no has agregado productos.</p>
+                    <div class="mt-4 flex gap-2">
+                        <button id="clearCartBtn" class="flex-1 rounded-full bg-slate-800 hover:bg-red-600 transition px-4 py-2 text-sm font-semibold text-white">Vaciar</button>
+                        <button id="openCartBtnMobile" class="flex-1 rounded-full bg-cyan-500 hover:bg-cyan-400 transition px-4 py-2 text-sm font-semibold text-black">Carrito</button>
+                    </div>
+                </div>
+            </div>
+        </aside>
 
-            <section>
-                <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                    <!-- Cargado por JS -->
-                </div>
+        <section class="px-6 lg:px-0">
+            <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                <!-- Cargado por JS -->
+            </div>
 
-                <div id="emptyState" class="hidden text-center py-20">
-                    <i class="fas fa-search text-6xl text-slate-700 mb-4"></i>
-                    <p class="text-slate-400 text-xl">No encontramos productos en esta categoría.</p>
-                </div>
-            </section>
-        </div>
+            <div id="emptyState" class="hidden text-center py-20">
+                <i class="fas fa-search text-6xl text-slate-700 mb-4"></i>
+                <p class="text-slate-400 text-xl">No encontramos productos en esta categoría.</p>
+            </div>
+        </section>
     </main>
 
-    <div id="cartWindow" class="fixed left-5 bottom-5 z-50 hidden w-[320px] rounded-[30px] border border-slate-700 bg-slate-950/95 shadow-2xl backdrop-blur-xl">
-        <div class="flex items-center justify-between border-b border-slate-700 px-5 py-4">
-            <div>
-                <h2 class="text-lg font-bold text-white">Tu carrito</h2>
-                <p id="cartWindowSummary" class="text-slate-400 text-xs">Revisa tus productos aquí.</p>
+    <button id="cartWidgetBtn" class="fixed right-5 bottom-5 z-[9999] flex items-center gap-3 rounded-full bg-cyan-500 px-4 py-3 text-sm font-semibold text-black shadow-2xl hover:bg-cyan-400 transition">
+        <i class="fas fa-shopping-cart"></i>
+        <span id="cartWidgetSummary">0 ítems | Total: $0.00</span>
+    </button>
+
+    <div id="cartWindow" class="fixed inset-0 z-[9988] hidden flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
+        <div class="relative w-full max-w-xl rounded-[30px] border border-slate-700 bg-slate-950/95 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-700 px-5 py-4">
+                <div>
+                    <h2 class="text-lg font-bold text-white">Tu carrito</h2>
+                    <p id="cartWindowSummary" class="text-slate-400 text-xs">Revisa tus productos aquí.</p>
+                </div>
+                <button id="closeCartBtn" class="rounded-full bg-slate-800 p-2 text-slate-200 hover:bg-slate-700 transition">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-            <button id="closeCartBtn" class="rounded-full bg-slate-800 p-2 text-slate-200 hover:bg-slate-700 transition">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div id="cartItems" class="cart-window-scroll space-y-3 p-4"></div>
-        <div class="border-t border-slate-700 p-4">
-            <div class="flex items-center justify-between text-sm text-slate-400 mb-3">
-                <span>Total</span>
-                <span id="cartTotal" class="text-white font-bold">$0.00</span>
-            </div>
-            <div class="flex gap-2">
-                <button id="clearCartBtnWindow" class="flex-1 rounded-full bg-slate-800 hover:bg-red-600 transition px-4 py-2 text-sm font-semibold text-white">Vaciar</button>
-                <a id="checkoutBtn" href="#" target="_blank" class="flex-1 rounded-full bg-cyan-500 hover:bg-cyan-400 transition px-4 py-2 text-sm font-semibold text-black text-center">Enviar</a>
+            <div id="cartItems" class="cart-window-scroll space-y-3 p-4"></div>
+            <div class="border-t border-slate-700 p-4">
+                <div class="flex items-center justify-between text-sm text-slate-400 mb-3">
+                    <span>Total</span>
+                    <span id="cartTotal" class="text-white font-bold">$0.00</span>
+                </div>
+                <div class="flex gap-2">
+                    <button id="clearCartBtnWindow" class="flex-1 rounded-full bg-slate-800 hover:bg-red-600 transition px-4 py-2 text-sm font-semibold text-white">Vaciar</button>
+                    <a id="checkoutBtn" href="#" target="_blank" class="flex-1 rounded-full bg-cyan-500 hover:bg-cyan-400 transition px-4 py-2 text-sm font-semibold text-black text-center">Enviar</a>
+                </div>
             </div>
         </div>
     </div>

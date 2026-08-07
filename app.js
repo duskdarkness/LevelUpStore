@@ -362,9 +362,8 @@
         const clearCartBtnWindow = document.getElementById('clearCartBtnWindow');
         const openCartBtn = document.getElementById('openCartBtn');
         const openCartBtnMobile = document.getElementById('openCartBtnMobile');
-        const closeCartBtn = document.getElementById('closeCartBtn');
-        const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
-        const sidebar = document.getElementById('sidebar');
+        const cartWidgetBtn = document.getElementById('cartWidgetBtn');
+        const cartWidgetSummary = document.getElementById('cartWidgetSummary');
         const sidebarBody = document.getElementById('sidebarBody');
         const grid = document.getElementById('productGrid');
         const filters = document.getElementById('filterContainer');
@@ -436,6 +435,7 @@
             if (count === 0) {
                 cartSummary.textContent = 'Aún no has agregado productos.';
                 cartWindowSummary.textContent = 'Tu carrito está vacío.';
+                cartWidgetSummary.textContent = '0 ítems | Total: $0.00';
                 cartTotal.textContent = '$0.00';
                 checkoutBtn.href = wsLink;
                 renderCartItems();
@@ -443,8 +443,10 @@
             }
 
             const productLabel = count === 1 ? 'producto' : 'productos';
+            const widgetLabel = count === 1 ? '1 ítem' : `${count} ítems`;
             cartSummary.textContent = `Llevas ${count} ${productLabel} • Total: $${total.toFixed(2)}`;
             cartWindowSummary.textContent = `Llevas ${count} ${productLabel} • Total: $${total.toFixed(2)}`;
+            cartWidgetSummary.textContent = `${widgetLabel} | Total: $${total.toFixed(2)}`;
             cartTotal.textContent = `$${total.toFixed(2)}`;
             checkoutBtn.href = wsLink;
             renderCartItems();
@@ -458,6 +460,12 @@
             cartWindow.classList.add('hidden');
         }
 
+        cartWindow.addEventListener('click', e => {
+            if (e.target === cartWindow) {
+                closeCart();
+            }
+        });
+
         clearCartBtn.addEventListener('click', () => {
             cart.length = 0;
             updateCart();
@@ -470,6 +478,7 @@
 
         openCartBtn.addEventListener('click', openCart);
         openCartBtnMobile.addEventListener('click', openCart);
+        cartWidgetBtn.addEventListener('click', openCart);
         closeCartBtn.addEventListener('click', closeCart);
         toggleSidebarBtn.addEventListener('click', () => {
             sidebar.classList.toggle('sidebar-collapsed');
