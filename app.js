@@ -498,104 +498,95 @@
         });
 
         cartItems.addEventListener('click', e => {
-            const button = e.target.closest('button[data-action]');
-            if (!button) return;
-            const index = Number(button.dataset.idx);
-            if (button.dataset.action === 'increase') {
-                changeCartQty(index, 1);
-            } else if (button.dataset.action === 'decrease') {
-                changeCartQty(index, -1);
-            } else if (button.dataset.action === 'remove') {
-                removeCartItem(index);
-            }
-        });
+    const button = e.target.closest('button[data-action]');
+    if (!button) return;
+    const index = Number(button.dataset.idx);
+    if (button.dataset.action === 'increase') {
+        changeCartQty(index, 1);
+    } else if (button.dataset.action === 'decrease') {
+        changeCartQty(index, -1);
+    } else if (button.dataset.action === 'remove') {
+        removeCartItem(index);
+    }
+});
 
-        grid.addEventListener('click', e => {
-            const btn = e.target.closest('.add-to-cart-btn');
-            if (!btn) return;
-            const index = Number(btn.dataset.idx);
-            if (!Number.isNaN(index)) {
-                addToCart(data[index]);
-            }
-        });
+grid.addEventListener('click', e => {
+    const btn = e.target.closest('.add-to-cart-btn');
+    if (!btn) return;
+    const index = Number(btn.dataset.idx);
+    if (!Number.isNaN(index)) {
+        addToCart(data[index]);
+    }
+});
 
-        const uniqueCats = [...new Set(data.map(i => i.cat))];
-        uniqueCats.forEach(cat => {
-            const btn = document.createElement('button');
-            btn.className = 'category-pill px-4 py-3 rounded-2xl text-[11px] uppercase tracking-wider text-slate-200 text-left';
-            btn.textContent = cat;
-            btn.dataset.cat = cat;
-            filters.appendChild(btn);
-        });
+const uniqueCats = [...new Set(data.map(i => i.cat))];
+uniqueCats.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'category-pill px-4 py-3 rounded-2xl text-[11px] uppercase tracking-wider text-slate-200 text-left';
+    btn.textContent = cat;
+    btn.dataset.cat = cat;
+    filters.appendChild(btn);
+});
 
-        function render(filterText = '', filterCat = 'all') {
-            grid.innerHTML = '';
-            const filtered = data.filter(i => {
-                const matchesSearch = i.item.toLowerCase().includes(filterText.toLowerCase()) || 
-                                     i.cat.toLowerCase().includes(filterText.toLowerCase());
-                const matchesCat = filterCat === 'all' || i.cat === filterCat;
-                return matchesSearch && matchesCat;
-            });
+function render(filterText = '', filterCat = 'all') {
+    grid.innerHTML = '';
+    const filtered = data.filter(i => {
+        const matchesSearch = i.item.toLowerCase().includes(filterText.toLowerCase()) || 
+                             i.cat.toLowerCase().includes(filterText.toLowerCase());
+        const matchesCat = filterCat === 'all' || i.cat === filterCat;
+        return matchesSearch && matchesCat;
+    });
 
-            if(filtered.length === 0) {
-                document.getElementById('emptyState').classList.remove('hidden');
-            } else {
-                document.getElementById('emptyState').classList.add('hidden');
-          function render(filterText = '', filterCat = 'all') {
-            grid.innerHTML = '';
-            const filtered = data.filter(i => {
-                const matchesSearch = i.item.toLowerCase().includes(filterText.toLowerCase()) || 
-                                     i.cat.toLowerCase().includes(filterText.toLowerCase());
-                const matchesCat = filterCat === 'all' || i.cat === filterCat;
-                return matchesSearch && matchesCat;
-            });
+    if (filtered.length === 0) {
+        document.getElementById('emptyState').classList.remove('hidden');
+    } else {
+        document.getElementById('emptyState').classList.add('hidden');
+        filtered.forEach((i, idx) => {
+            const directMsg = encodeURIComponent(`Hola, deseo realizar el siguiente pedido:\n\n• 1x ${i.item} (${i.cat} - ${i.sub}) | Precio: $${i.price}\n\n*Total a pagar: $${i.price}*`);
+            const directWsLink = `${wsLink}?text=${directMsg}`;
 
-            if(filtered.length === 0) {
-                document.getElementById('emptyState').classList.remove('hidden');
-            } else {
-                document.getElementById('emptyState').classList.add('hidden');
-                filtered.forEach((i, idx) => {
-                    const directMsg = encodeURIComponent(`Hola, deseo realizar el siguiente pedido:\n\n• 1x ${i.item} (${i.cat} - ${i.sub}) | Precio: $${i.price}\n\n*Total a pagar: $${i.price}*`);
-                    const directWsLink = `${wsLink}?text=${directMsg}`;
-
-                    grid.innerHTML += `
-                        <div class="product-card rounded-xl p-4 flex flex-col justify-between">
+            grid.innerHTML += `
+                <div class="product-card rounded-xl p-4 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-[10px] font-bold py-0.5 px-2 rounded bg-slate-800 text-cyan-400 uppercase tracking-tighter">${i.cat}</span>
+                            <span class="text-[10px] text-slate-500 italic uppercase">${i.sub}</span>
+                        </div>
+                        <h3 class="text-lg font-bold text-white leading-tight mb-4">${i.item}</h3>
+                    </div>
+                    <div class="flex flex-col gap-3 border-t border-slate-800/50 pt-3">
+                        <div class="flex items-center justify-between">
                             <div>
-                                <div class="flex justify-between items-start mb-2">
-                                    <span class="text-[10px] font-bold py-0.5 px-2 rounded bg-slate-800 text-cyan-400 uppercase tracking-tighter">${i.cat}</span>
-                                    <span class="text-[10px] text-slate-500 italic uppercase">${i.sub}</span>
-                                </div>
-                                <h3 class="text-lg font-bold text-white leading-tight mb-4">${i.item}</h3>
-                            </div>
-                            <div class="flex flex-col gap-3 border-t border-slate-800/50 pt-3">
-                                <div class="flex items-center justify-between">
-                                    <div>
-                                        <span class="block text-[10px] text-slate-500 uppercase">Precio USD</span>
-                                        <span class="price-tag text-2xl font-black">$${i.price}</span>
-                                    </div>
-                                </div>
-                                <div class="flex items-center justify-between gap-2">
-                                    <button data-idx="${data.indexOf(i)}" class="add-to-cart-btn flex-1 px-3 py-2 rounded-full bg-cyan-500 text-black font-semibold hover:bg-cyan-400 transition text-sm">Agregar</button>
-                                    <a href="${directWsLink}" target="_blank" class="whatsapp-link h-10 w-10 rounded-lg bg-slate-800 hover:bg-cyan-500 hover:text-black transition-all flex items-center justify-center group shadow-lg">
-                                        <i class="fab fa-whatsapp text-lg group-hover:scale-110"></i>
-                                    </a>
-                                </div>
+                                <span class="block text-[10px] text-slate-500 uppercase">Precio USD</span>
+                                <span class="price-tag text-2xl font-black">$${i.price}</span>
                             </div>
                         </div>
-                    `;
-                });
-            }
-        }
-
-        search.addEventListener('input', e => render(e.target.value, document.querySelector('.category-pill.active').dataset.cat));
-        filters.addEventListener('click', e => {
-            if(e.target.tagName === 'BUTTON') {
-                document.querySelectorAll('.category-pill').forEach(b => b.classList.remove('active'));
-                e.target.classList.add('active');
-                render(search.value, e.target.dataset.cat);
-            }
+                        <div class="flex items-center justify-between gap-2">
+                            <button data-idx="${data.indexOf(i)}" class="add-to-cart-btn flex-1 px-3 py-2 rounded-full bg-cyan-500 text-black font-semibold hover:bg-cyan-400 transition text-sm">Agregar</button>
+                            <a href="${directWsLink}" target="_blank" class="whatsapp-link h-10 w-10 rounded-lg bg-slate-800 hover:bg-cyan-500 hover:text-black transition-all flex items-center justify-center group shadow-lg">
+                                <i class="fab fa-whatsapp text-lg group-hover:scale-110"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
         });
+    }
+}
 
-        render();
-        updateCart();
-    
+search.addEventListener('input', e => {
+    const activeBtn = document.querySelector('.category-pill.active');
+    const cat = activeBtn ? activeBtn.dataset.cat : 'all';
+    render(e.target.value, cat);
+});
+
+filters.addEventListener('click', e => {
+    if (e.target.tagName === 'BUTTON') {
+        document.querySelectorAll('.category-pill').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+        render(search.value, e.target.dataset.cat);
+    }
+});
+
+render();
+updateCart();
