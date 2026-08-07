@@ -352,7 +352,6 @@
         ];
 
         const cart = [];
-        const cartSummary = document.getElementById('cartSummary');
         const cartWindow = document.getElementById('cartWindow');
         const cartWindowSummary = document.getElementById('cartWindowSummary');
         const cartItems = document.getElementById('cartItems');
@@ -360,10 +359,12 @@
         const checkoutBtn = document.getElementById('checkoutBtn');
         const clearCartBtn = document.getElementById('clearCartBtn');
         const clearCartBtnWindow = document.getElementById('clearCartBtnWindow');
-        const openCartBtn = document.getElementById('openCartBtn');
         const cartWidgetBtn = document.getElementById('cartWidgetBtn');
         const cartWidgetSummary = document.getElementById('cartWidgetSummary');
         const sidebarBody = document.getElementById('sidebarBody');
+        const whatsappLinks = document.querySelectorAll('.whatsapp-link');
+        const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
+        const sidebar = document.getElementById('sidebar');
         const grid = document.getElementById('productGrid');
         const filters = document.getElementById('filterContainer');
         const search = document.getElementById('searchInput');
@@ -427,27 +428,44 @@
             }).join('');
         }
 
+        function buildCartMessage() {
+            if (cart.length === 0) return 'Hola, quiero hacer un pedido.';
+
+            const lines = cart.map(item => {
+                const price = Number(item.price.replace(',', '.')).toFixed(2);
+                return `• ${item.qty}x ${item.item} (${item.cat} - ${item.sub}) - $${price}`;
+            });
+
+            const total = cart.reduce((sum, item) => sum + Number(item.price.replace(',', '.')) * item.qty, 0).toFixed(2);
+            return `Hola, deseo pedir:\n${lines.join('\n')}\nTotal: $${total}`;
+        }
+
+        function updateWhatsAppLinks() {
+            const message = encodeURIComponent(buildCartMessage());
+            const target = `${wsLink}?text=${message}`;
+            whatsappLinks.forEach(link => link.setAttribute('href', target));
+            checkoutBtn.setAttribute('href', target);
+        }
+
         function updateCart() {
             const total = cart.reduce((sum, item) => sum + Number(item.price.replace(',', '.')) * item.qty, 0);
             const count = cart.reduce((sum, item) => sum + item.qty, 0);
 
             if (count === 0) {
-                cartSummary.textContent = 'Aún no has agregado productos.';
                 cartWindowSummary.textContent = 'Tu carrito está vacío.';
                 cartWidgetSummary.textContent = '0 ítems | Total: $0.00';
                 cartTotal.textContent = '$0.00';
-                checkoutBtn.href = wsLink;
+                updateWhatsAppLinks();
                 renderCartItems();
                 return;
             }
 
             const productLabel = count === 1 ? 'producto' : 'productos';
             const widgetLabel = count === 1 ? '1 ítem' : `${count} ítems`;
-            cartSummary.textContent = `Llevas ${count} ${productLabel} • Total: $${total.toFixed(2)}`;
             cartWindowSummary.textContent = `Llevas ${count} ${productLabel} • Total: $${total.toFixed(2)}`;
             cartWidgetSummary.textContent = `${widgetLabel} | Total: $${total.toFixed(2)}`;
             cartTotal.textContent = `$${total.toFixed(2)}`;
-            checkoutBtn.href = wsLink;
+            updateWhatsAppLinks();
             renderCartItems();
         }
 
@@ -475,7 +493,6 @@
             updateCart();
         });
 
-        openCartBtn.addEventListener('click', openCart);
         cartWidgetBtn.addEventListener('click', openCart);
         closeCartBtn.addEventListener('click', closeCart);
         toggleSidebarBtn.addEventListener('click', () => {
@@ -546,9 +563,9 @@
                                         <span class="price-tag text-2xl font-black">$${i.price}</span>
                                     </div>
                                 </div>
-                                <div class="flex items-center justify-between gap-2">
+                                                <div class="flex items-center justify-between gap-2">
                                     <button data-idx="${data.indexOf(i)}" class="add-to-cart-btn flex-1 px-3 py-2 rounded-full bg-cyan-500 text-black font-semibold hover:bg-cyan-400 transition text-sm">Agregar</button>
-                                    <a href="${wsLink}" target="_blank" class="h-10 w-10 rounded-lg bg-slate-800 hover:bg-cyan-500 hover:text-black transition-all flex items-center justify-center group shadow-lg">
+                                    <a href="${wsLink}" target="_blank" class="whatsapp-link h-10 w-10 rounded-lg bg-slate-800 hover:bg-cyan-500 hover:text-black transition-all flex items-center justify-center group shadow-lg">
                                         <i class="fab fa-whatsapp text-lg group-hover:scale-110"></i>
                                     </a>
                                 </div>
