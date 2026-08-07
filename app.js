@@ -376,9 +376,8 @@
             cartPanel.classList.remove('hidden');
             const total = cart.reduce((sum, item) => sum + Number(item.price.replace(',', '.')), 0);
             const list = cart.map((item, index) => `${index + 1}. ${item.item} - $${item.price}`).join('\n');
-            cartSummary.textContent = `${cart.length} producto(s) en el carrito. Total: $${total.toFixed(2)}.`;
-            const message = encodeURIComponent(`Hola, quiero este pedido:\n${list}\nTotal: $${total.toFixed(2)}`);
-            checkoutBtn.href = `https://api.whatsapp.com/send?text=${message}`;
+            cartSummary.textContent = `Abre el grupo de WhatsApp para enviar tu pedido.\n${cart.length} producto(s). Total: $${total.toFixed(2)}.`;
+            checkoutBtn.href = wsLink;
         }
 
         clearCartBtn.addEventListener('click', () => {
