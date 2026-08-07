@@ -352,37 +352,133 @@
         ];
 
         const cart = [];
-        const cartPanel = document.getElementById('cartPanel');
         const cartSummary = document.getElementById('cartSummary');
+        const cartWindow = document.getElementById('cartWindow');
+        const cartWindowSummary = document.getElementById('cartWindowSummary');
+        const cartItems = document.getElementById('cartItems');
+        const cartTotal = document.getElementById('cartTotal');
         const checkoutBtn = document.getElementById('checkoutBtn');
         const clearCartBtn = document.getElementById('clearCartBtn');
+        const clearCartBtnWindow = document.getElementById('clearCartBtnWindow');
+        const openCartBtn = document.getElementById('openCartBtn');
+        const openCartBtnMobile = document.getElementById('openCartBtnMobile');
+        const closeCartBtn = document.getElementById('closeCartBtn');
         const grid = document.getElementById('productGrid');
         const filters = document.getElementById('filterContainer');
         const search = document.getElementById('searchInput');
 
         function addToCart(item) {
-            cart.push({ ...item });
+            const existing = cart.find(entry => entry.item === item.item && entry.cat === item.cat && entry.sub === item.sub);
+            if (existing) {
+                existing.qty += 1;
+            } else {
+                cart.push({ ...item, qty: 1 });
+            }
             updateCart();
         }
 
-        function updateCart() {
+        function changeCartQty(index, delta) {
+            const entry = cart[index];
+            if (!entry) return;
+            entry.qty += delta;
+            if (entry.qty <= 0) {
+                cart.splice(index, 1);
+            }
+            updateCart();
+        }
+
+        function removeCartItem(index) {
+            cart.splice(index, 1);
+            updateCart();
+        }
+
+        function renderCartItems() {
             if (cart.length === 0) {
-                cartPanel.classList.add('hidden');
-                cartSummary.textContent = 'Aún no has agregado productos.';
-                checkoutBtn.href = wsLink;
+                cartItems.innerHTML = '<p class="text-slate-400 text-sm">Tu carrito está vacío.</p>';
                 return;
             }
 
-            cartPanel.classList.remove('hidden');
-            const total = cart.reduce((sum, item) => sum + Number(item.price.replace(',', '.')), 0);
-            const list = cart.map((item, index) => `${index + 1}. ${item.item} - $${item.price}`).join('\n');
-            cartSummary.textContent = `Abre el grupo de WhatsApp para enviar tu pedido.\n${cart.length} producto(s). Total: $${total.toFixed(2)}.`;
+            cartItems.innerHTML = cart.map((item, index) => {
+                const itemTotal = (Number(item.price.replace(',', '.')) * item.qty).toFixed(2);
+                return `
+                    <div class="glass rounded-3xl border border-slate-700 p-3">
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <p class="text-slate-400 text-xs uppercase tracking-[0.15em]">${item.cat}</p>
+                                <h3 class="text-white font-semibold">${item.item}</h3>
+                                <p class="text-slate-400 text-xs">${item.sub}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-white font-bold">$${item.price}</p>
+                                <p class="text-slate-400 text-xs">x${item.qty} = $${itemTotal}</p>
+                            </div>
+                        </div>
+                        <div class="mt-3 flex items-center justify-between gap-2">
+                            <div class="flex items-center gap-2">
+                                <button data-action="decrease" data-idx="${index}" class="px-2 py-1 rounded-full bg-slate-800 text-slate-200 hover:bg-slate-700 transition">-</button>
+                                <span class="text-white font-semibold">${item.qty}</span>
+                                <button data-action="increase" data-idx="${index}" class="px-2 py-1 rounded-full bg-cyan-500 text-black hover:bg-cyan-400 transition">+</button>
+                            </div>
+                            <button data-action="remove" data-idx="${index}" class="text-sm text-red-400 hover:text-red-300">Eliminar</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateCart() {
+            const total = cart.reduce((sum, item) => sum + Number(item.price.replace(',', '.')) * item.qty, 0);
+            const count = cart.reduce((sum, item) => sum + item.qty, 0);
+
+            if (count === 0) {
+                cartSummary.textContent = 'Aún no has agregado productos.';
+                cartWindowSummary.textContent = 'Tu carrito está vacío.';
+                cartTotal.textContent = '$0.00';
+                checkoutBtn.href = wsLink;
+                renderCartItems();
+                return;
+            }
+
+            cartSummary.textContent = `${count} producto(s) en carrito • Total: $${total.toFixed(2)}`;
+            cartWindowSummary.textContent = `${count} artículo(s) listo(s) para enviar.`;
+            cartTotal.textContent = `$${total.toFixed(2)}`;
             checkoutBtn.href = wsLink;
+            renderCartItems();
+        }
+
+        function openCart() {
+            cartWindow.classList.remove('hidden');
+        }
+
+        function closeCart() {
+            cartWindow.classList.add('hidden');
         }
 
         clearCartBtn.addEventListener('click', () => {
             cart.length = 0;
             updateCart();
+        });
+
+        clearCartBtnWindow.addEventListener('click', () => {
+            cart.length = 0;
+            updateCart();
+        });
+
+        openCartBtn.addEventListener('click', openCart);
+        openCartBtnMobile.addEventListener('click', openCart);
+        closeCartBtn.addEventListener('click', closeCart);
+
+        cartItems.addEventListener('click', e => {
+            const button = e.target.closest('button[data-action]');
+            if (!button) return;
+            const index = Number(button.dataset.idx);
+            if (button.dataset.action === 'increase') {
+                changeCartQty(index, 1);
+            } else if (button.dataset.action === 'decrease') {
+                changeCartQty(index, -1);
+            } else if (button.dataset.action === 'remove') {
+                removeCartItem(index);
+            }
         });
 
         grid.addEventListener('click', e => {
@@ -397,7 +493,7 @@
         const uniqueCats = [...new Set(data.map(i => i.cat))];
         uniqueCats.forEach(cat => {
             const btn = document.createElement('button');
-            btn.className = 'category-pill px-5 py-1.5 rounded-full text-xs uppercase tracking-wider text-slate-400';
+            btn.className = 'category-pill px-4 py-3 rounded-2xl text-[11px] uppercase tracking-wider text-slate-200 text-left';
             btn.textContent = cat;
             btn.dataset.cat = cat;
             filters.appendChild(btn);
@@ -416,7 +512,7 @@
                 document.getElementById('emptyState').classList.remove('hidden');
             } else {
                 document.getElementById('emptyState').classList.add('hidden');
-                filtered.forEach(i => {
+                filtered.forEach((i, idx) => {
                     grid.innerHTML += `
                         <div class="product-card rounded-xl p-4 flex flex-col justify-between">
                             <div>
@@ -426,14 +522,16 @@
                                 </div>
                                 <h3 class="text-lg font-bold text-white leading-tight mb-4">${i.item}</h3>
                             </div>
-                            <div class="flex items-end justify-between border-t border-slate-800/50 pt-3 gap-2">
-                                <div>
-                                    <span class="block text-[10px] text-slate-500 uppercase">Precio USD</span>
-                                    <span class="price-tag text-2xl font-black">$${i.price}</span>
+                            <div class="flex flex-col gap-3 border-t border-slate-800/50 pt-3">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <span class="block text-[10px] text-slate-500 uppercase">Precio USD</span>
+                                        <span class="price-tag text-2xl font-black">$${i.price}</span>
+                                    </div>
                                 </div>
-                                <div class="flex items-center gap-2">
-                                    <button data-idx="${data.indexOf(i)}" class="add-to-cart-btn px-3 py-2 rounded-full bg-cyan-500 text-black font-semibold hover:bg-cyan-400 transition text-sm">Agregar</button>
-                                    <a href="https://api.whatsapp.com/send?text=${encodeURIComponent(`Hola, quiero este pedido:\n1. ${i.item} - $${i.price}\nTotal: $${i.price}`)}" target="_blank" class="h-10 w-10 rounded-lg bg-slate-800 hover:bg-cyan-500 hover:text-black transition-all flex items-center justify-center group shadow-lg">
+                                <div class="flex items-center justify-between gap-2">
+                                    <button data-idx="${data.indexOf(i)}" class="add-to-cart-btn flex-1 px-3 py-2 rounded-full bg-cyan-500 text-black font-semibold hover:bg-cyan-400 transition text-sm">Agregar</button>
+                                    <a href="https://chat.whatsapp.com/KlfZ1quOMMy0BIKtLRkk6i" target="_blank" class="h-10 w-10 rounded-lg bg-slate-800 hover:bg-cyan-500 hover:text-black transition-all flex items-center justify-center group shadow-lg">
                                         <i class="fab fa-whatsapp text-lg group-hover:scale-110"></i>
                                     </a>
                                 </div>
