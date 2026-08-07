@@ -361,7 +361,6 @@
         const clearCartBtn = document.getElementById('clearCartBtn');
         const clearCartBtnWindow = document.getElementById('clearCartBtnWindow');
         const openCartBtn = document.getElementById('openCartBtn');
-        const openCartBtnMobile = document.getElementById('openCartBtnMobile');
         const cartWidgetBtn = document.getElementById('cartWidgetBtn');
         const cartWidgetSummary = document.getElementById('cartWidgetSummary');
         const sidebarBody = document.getElementById('sidebarBody');
@@ -477,7 +476,6 @@
         });
 
         openCartBtn.addEventListener('click', openCart);
-        openCartBtnMobile.addEventListener('click', openCart);
         cartWidgetBtn.addEventListener('click', openCart);
         closeCartBtn.addEventListener('click', closeCart);
         toggleSidebarBtn.addEventListener('click', () => {
@@ -550,7 +548,7 @@
                                 </div>
                                 <div class="flex items-center justify-between gap-2">
                                     <button data-idx="${data.indexOf(i)}" class="add-to-cart-btn flex-1 px-3 py-2 rounded-full bg-cyan-500 text-black font-semibold hover:bg-cyan-400 transition text-sm">Agregar</button>
-                                    <a href="https://chat.whatsapp.com/KlfZ1quOMMy0BIKtLRkk6i" target="_blank" class="h-10 w-10 rounded-lg bg-slate-800 hover:bg-cyan-500 hover:text-black transition-all flex items-center justify-center group shadow-lg">
+                                    <a href="${wsLink}" target="_blank" class="h-10 w-10 rounded-lg bg-slate-800 hover:bg-cyan-500 hover:text-black transition-all flex items-center justify-center group shadow-lg">
                                         <i class="fab fa-whatsapp text-lg group-hover:scale-110"></i>
                                     </a>
                                 </div>
