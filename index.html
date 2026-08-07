@@ -38,6 +38,27 @@
             -webkit-text-fill-color: transparent;
             font-weight: 800;
         }
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .sidebar-body {
+            transition: opacity 0.2s ease;
+        }
+        .sidebar-collapsed {
+            width: 96px;
+            min-width: 96px;
+        }
+        .sidebar-collapsed .sidebar-header h2,
+        .sidebar-collapsed .sidebar-body {
+            display: none;
+        }
+        .sidebar-collapsed .collapse-btn {
+            width: 100%;
+            justify-content: center;
+        }
         .category-pill {
             background: rgba(255,255,255,0.03);
             border: 1px solid rgba(255,255,255,0.08);
@@ -86,27 +107,34 @@
 
     <main class="max-w-7xl mx-auto px-6">
         <div class="grid lg:grid-cols-[280px_minmax(0,1fr)] gap-6">
-            <aside class="glass rounded-3xl border border-slate-700 p-6 shadow-xl">
-                <div class="mb-6">
-                    <h2 class="text-xl font-bold text-white mb-3">Buscar</h2>
-                    <div class="relative">
-                        <input type="text" id="searchInput" placeholder="Buscar juego o tarjeta..."
-                            class="w-full bg-slate-900/80 border border-slate-700 rounded-full py-3 pl-12 pr-4 focus:outline-none focus:border-cyan-400 transition-all text-base text-white">
-                        <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"></i>
-                    </div>
+            <aside id="sidebar" class="glass rounded-3xl border border-slate-700 p-6 shadow-xl">
+                <div class="sidebar-header mb-6">
+                    <h2 class="text-xl font-bold text-white mb-0">Buscar</h2>
+                    <button id="toggleSidebarBtn" class="collapse-btn rounded-full bg-slate-800 px-3 py-2 text-sm text-slate-200 hover:bg-slate-700 transition">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
                 </div>
-                <div class="mb-6">
-                    <h3 class="text-sm uppercase tracking-[0.3em] text-slate-400 mb-4">Categorías</h3>
-                    <div id="filterContainer" class="flex flex-col gap-2 sidebar-scroll pr-2">
-                        <button class="category-pill active px-4 py-3 rounded-2xl text-[11px] uppercase tracking-wider text-slate-200 text-left" data-cat="all">Todos</button>
+                <div id="sidebarBody" class="sidebar-body">
+                    <div class="mb-6">
+                        <div class="relative">
+                            <input type="text" id="searchInput" placeholder="Buscar juego o tarjeta..."
+                                class="w-full bg-slate-900/80 border border-slate-700 rounded-full py-3 pl-12 pr-4 focus:outline-none focus:border-cyan-400 transition-all text-base text-white">
+                            <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"></i>
+                        </div>
                     </div>
-                </div>
-                <div class="glass rounded-3xl bg-slate-950/90 border border-slate-700 p-4 shadow-inner">
-                    <p class="text-slate-400 text-sm mb-3">Resumen rápido</p>
-                    <p id="cartSummary" class="text-white font-semibold">Aún no has agregado productos.</p>
-                    <div class="mt-4 flex gap-2">
-                        <button id="clearCartBtn" class="flex-1 rounded-full bg-slate-800 hover:bg-red-600 transition px-4 py-2 text-sm font-semibold text-white">Vaciar</button>
-                        <button id="openCartBtnMobile" class="flex-1 rounded-full bg-cyan-500 hover:bg-cyan-400 transition px-4 py-2 text-sm font-semibold text-black">Carrito</button>
+                    <div class="mb-6">
+                        <h3 class="text-sm uppercase tracking-[0.3em] text-slate-400 mb-4">Categorías</h3>
+                        <div id="filterContainer" class="flex flex-col gap-2 sidebar-scroll pr-2">
+                            <button class="category-pill active px-4 py-3 rounded-2xl text-[11px] uppercase tracking-wider text-slate-200 text-left" data-cat="all">Todos</button>
+                        </div>
+                    </div>
+                    <div class="glass rounded-3xl bg-slate-950/90 border border-slate-700 p-4 shadow-inner">
+                        <p class="text-slate-400 text-sm mb-3">Resumen rápido</p>
+                        <p id="cartSummary" class="text-white font-semibold">Aún no has agregado productos.</p>
+                        <div class="mt-4 flex gap-2">
+                            <button id="clearCartBtn" class="flex-1 rounded-full bg-slate-800 hover:bg-red-600 transition px-4 py-2 text-sm font-semibold text-white">Vaciar</button>
+                            <button id="openCartBtnMobile" class="flex-1 rounded-full bg-cyan-500 hover:bg-cyan-400 transition px-4 py-2 text-sm font-semibold text-black">Carrito</button>
+                        </div>
                     </div>
                 </div>
             </aside>
@@ -124,7 +152,7 @@
         </div>
     </main>
 
-    <div id="cartWindow" class="fixed right-5 bottom-5 z-50 hidden w-[320px] rounded-[30px] border border-slate-700 bg-slate-950/95 shadow-2xl backdrop-blur-xl">
+    <div id="cartWindow" class="fixed left-5 bottom-5 z-50 hidden w-[320px] rounded-[30px] border border-slate-700 bg-slate-950/95 shadow-2xl backdrop-blur-xl">
         <div class="flex items-center justify-between border-b border-slate-700 px-5 py-4">
             <div>
                 <h2 class="text-lg font-bold text-white">Tu carrito</h2>

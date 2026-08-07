@@ -363,6 +363,9 @@
         const openCartBtn = document.getElementById('openCartBtn');
         const openCartBtnMobile = document.getElementById('openCartBtnMobile');
         const closeCartBtn = document.getElementById('closeCartBtn');
+        const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarBody = document.getElementById('sidebarBody');
         const grid = document.getElementById('productGrid');
         const filters = document.getElementById('filterContainer');
         const search = document.getElementById('searchInput');
@@ -468,6 +471,12 @@
         openCartBtn.addEventListener('click', openCart);
         openCartBtnMobile.addEventListener('click', openCart);
         closeCartBtn.addEventListener('click', closeCart);
+        toggleSidebarBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('sidebar-collapsed');
+            const icon = toggleSidebarBtn.querySelector('i');
+            icon.classList.toggle('fa-chevron-left');
+            icon.classList.toggle('fa-chevron-right');
+        });
 
         cartItems.addEventListener('click', e => {
             const button = e.target.closest('button[data-action]');
