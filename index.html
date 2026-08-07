@@ -1,45 +1,54 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LevelUpStore - Tu Tienda Digital Gamer</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #00f2ff;
-            --secondary: #7000ff;
-            --bg: #050505;
-        }
-        body { 
-            font-family: 'Rajdhani', sans-serif; 
-            background-color: var(--bg); 
-            color: #e2e8f0;
-            background-image: radial-gradient(circle at 50% -20%, #1e1b4b 0%, #050505 80%);
-            background-attachment: fixed;
-        }
-        .header-font { font-family: 'Orbitron', sans-serif; }
-        .glass { background: rgba(15, 15, 25, 0.85); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .product-card {
-            background: linear-gradient(145deg, #0f172a 0%, #020617 100%);
-            border: 1px solid #1e293b;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .product-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--primary);
-            box-shadow: 0 0 20px rgba(0, 242, 255, 0.15);
-        }
-        .price-tag {
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-weight: 800;
-        }
         .sidebar-header {
             display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        /* Make sidebar sticky and keep it visible while scrolling */
+        #sidebar {
+            position: sticky;
+            top: 100px;
+            align-self: start;
+            height: fit-content;
+            transition: all 0.25s ease;
+        }
+        /* Toggle button sits on the sidebar edge */
+        .sidebar-toggle-btn {
+            position: absolute;
+            top: 12px;
+            right: -20px;
+            z-index: 9999;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(15,15,25,0.95);
+        }
+        .sidebar-collapsed {
+            width: 92px;
+            min-width: 92px;
+            padding: 1rem 0.5rem !important;
+        }
+        .sidebar-collapsed .sidebar-header h2,
+        .sidebar-collapsed .sidebar-body {
+            display: none;
+        }
+        .sidebar-collapsed .sidebar-toggle-btn {
+            right: 8px;
+        }
+        @media (max-width: 1024px) {
+            #sidebar {
+                position: relative;
+                top: 0;
+            }
+            .sidebar-toggle-btn {
+                right: 12px;
+                top: 12px;
+            }
+        }
             align-items: center;
             gap: 0.75rem;
         }
