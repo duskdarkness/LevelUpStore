@@ -448,11 +448,101 @@ function updateWhatsAppLinks() {
     const checkoutBtn = document.getElementById('checkoutBtn') || document.querySelector('.cart-checkout-btn');
     
     if (checkoutBtn) {
-        // Actualizamos directamente el enlace destino del botón/etiqueta <a>
         checkoutBtn.href = `${wsLink}?text=${msg}`;
         checkoutBtn.setAttribute('target', '_blank');
     }
 }
+
+function updateCart() {
+    const total = cart.reduce((sum, item) => sum + Number(item.price.toString().replace(',', '.')) * item.qty, 0);
+    const count = cart.reduce((sum, item) => sum + item.qty, 0);
+
+    if (count === 0) {
+        cartWindowSummary.textContent = 'Tu carrito está vacío.';
+        cartWidgetSummary.textContent = '0 ítems | Total: $0.00';
+        cartTotal.textContent = '$0.00';
+        updateWhatsAppLinks();
+        renderCartItems();
+        return;
+    }
+
+    const productLabel = count === 1 ? 'producto' : 'productos';
+    const widgetLabel = count === 1 ? '1 ítem' : `${count} ítems`;
+    cartWindowSummary.textContent = `Llevas ${count} ${productLabel} • Total: $${total.toFixed(2)}`;
+    cartWidgetSummary.textContent = `${widgetLabel} | Total: $${total.toFixed(2)}`;
+    cartTotal.textContent = `$${total.toFixed(2)}`;
+    updateWhatsAppLinks();
+    renderCartItems();
+}
+
+function openCart() {
+    cartWindow.classList.remove('hidden');
+}
+
+function closeCart() {
+    cartWindow.classList.add('hidden');
+}
+
+cartWindow.addEventListener('click', e => {
+    if (e.target === cartWindow) {
+        closeCart();
+    }
+});
+
+clearCartBtnWindow.addEventListener('click', () => {
+    cart.length = 0;
+    updateCart();
+});
+
+cartWidgetBtn.addEventListener('click', openCart);
+closeCartBtn.addEventListener('click', closeCart);
+
+toggleSidebarBtn.addEventListener('click', () => {
+    sidebar.classList.toggle('sidebar-collapsed');
+    const icon = toggleSidebarBtn.querySelector('i');
+    icon.classList.toggle('fa-chevron-left');
+    icon.classList.toggle('fa-chevron-right');
+});
+
+cartItems.addEventListener('click', e => {
+    const button = e.target.closest('button[data-action]');
+    if (!button) return;
+    const index = Number(button.dataset.idx);
+    if (button.dataset.action === 'increase') {
+        changeCartQty(index, 1);
+    } else if (button.dataset.action === 'decrease') {
+        changeCartQty(index, -1);
+    } else if (button.dataset.action === 'remove') {
+        removeCartItem(index);
+    }
+});
+
+grid.addEventListener('click', e => {
+    const btn = e.target.closest('.add-to-cart-btn');
+    if (!btn) return;
+    const index = Number(btn.dataset.idx);
+    if (!Number.isNaN(index)) {
+        addToCart(data[index]);
+    }
+});
+
+const uniqueCats = [...new Set(data.map(i => i.cat))];
+uniqueCats.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'category-pill px-4 py-3 rounded-2xl text-[11px] uppercase tracking-wider text-slate-200 text-left';
+    btn.textContent = cat;
+    btn.dataset.cat = cat;
+    filters.appendChild(btn);
+});
+
+function render(filterText = '', filterCat = 'all') {
+    grid.innerHTML = '';
+    const filtered = data.filter(i => {
+        const matchesSearch = i.item.toLowerCase().includes(filterText.toLowerCase()) || 
+                             i.cat.toLowerCase().includes(filterText.toLowerCase());
+        const matchesCat = filterCat === 'all' || i.cat === filterCat;
+        return matchesSearch && matchesCat;
+    });
 
     if (filtered.length === 0) {
         document.getElementById('emptyState').classList.remove('hidden');
