@@ -583,7 +583,7 @@ function render(filterText = '', filterCat = 'all') {
 
 search.addEventListener('input', e => {
     const activeBtn = document.querySelector('.category-pill.active');
-    const cat = activeBtn ? activeBtn.dataset.cat : 'all';
+    const cat = (activeBtn && activeBtn.dataset) ? activeBtn.dataset.cat : 'all';
     render(e.target.value, cat);
 });
 
@@ -591,7 +591,7 @@ filters.addEventListener('click', e => {
     if (e.target.tagName === 'BUTTON') {
         document.querySelectorAll('.category-pill').forEach(b => b.classList.remove('active'));
         e.target.classList.add('active');
-        render(search.value, e.target.dataset.cat);
+        render(search.value, e.target.dataset.cat || 'all');
     }
 });
 
