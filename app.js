@@ -448,7 +448,6 @@ function updateWhatsAppLinks() {
     const checkoutBtn = document.getElementById('checkoutBtn') || document.querySelector('.cart-checkout-btn');
     
     if (checkoutBtn) {
-        // Variante 1: Anexa el parámetro ?text= directamente al enlace de invitación de tu grupo (wsLink)
         checkoutBtn.href = `${wsLink}?text=${msg}`;
         checkoutBtn.setAttribute('target', '_blank');
     }
