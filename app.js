@@ -428,25 +428,31 @@
         }
 
         function buildCartMessage() {
-            if (cart.length === 0) return 'Hola, quiero hacer un pedido.';
+    if (cart.length === 0) {
+        return encodeURIComponent('Hola, quiero hacer una consulta.');
+    }
 
-            const lines = cart.map(item => {
-                const unitPrice = Number(item.price.replace(',', '.')).toFixed(2);
-                const subtotal = (Number(item.price.replace(',', '.')) * item.qty).toFixed(2);
-                return `• ${item.qty}x ${item.item} (${item.cat} - ${item.sub}) | C/U: $${unitPrice} | Subtotal: $${subtotal}`;
-            });
+    let itemsList = '';
+    let total = 0;
 
-            const total = cart.reduce((sum, item) => sum + Number(item.price.replace(',', '.')) * item.qty, 0).toFixed(2);
-            return `Hola, deseo realizar el siguiente pedido:\n\n${lines.join('\n')}\n\n*Total a pagar: $${total}*`;
-        }
+    cart.forEach(i => {
+        const itemTotal = i.price * i.qty;
+        total += itemTotal;
+        itemsList += `• ${i.qty}x ${i.item} (${i.cat}) - $${itemTotal.toFixed(2)}\n`;
+    });
 
-        function updateWhatsAppLinks() {
-            const message = encodeURIComponent(buildCartMessage());
-            const target = `${wsLink}?text=${message}`;
-            whatsappLinks.forEach(link => link.setAttribute('href', target));
-            checkoutBtn.setAttribute('href', target);
-        }
+    const fullMsg = `Hola, deseo realizar el siguiente pedido:\n\n${itemsList}\n*Total a pagar: $${total.toFixed(2)}*`;
+    return encodeURIComponent(fullMsg);
+}
 
+function updateWhatsAppLinks() {
+    const msg = buildCartMessage();
+    const checkoutBtn = document.getElementById('checkoutBtn') || document.querySelector('.cart-checkout-btn');
+    
+    if (checkoutBtn) {
+        checkoutBtn.href = `${wsLink}?text=${msg}`;
+    }
+}
         function updateCart() {
             const total = cart.reduce((sum, item) => sum + Number(item.price.replace(',', '.')) * item.qty, 0);
             const count = cart.reduce((sum, item) => sum + item.qty, 0);
