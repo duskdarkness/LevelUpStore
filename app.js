@@ -1,5 +1,5 @@
 
-        const wsLink = "https://chat.whatsapp.com/KlfZ1quOMMy0BIKtLRkk6i";
+        const wsLink = "https://api.whatsapp.com/send";
 
         const data = [
             // --- FREE FIRE LATAM ---
