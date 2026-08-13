@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LevelUpStore | Gaming Shop</title>
+    
+    <!-- Google Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #00f2fe;
+            --accent: #7000ff;
+        }
+        body {
+            background-color: #020617;
+            color: #f8fafc;
+            font-family: 'Rajdhani', sans-serif;
+        }
+        .header-font { font-family: 'Orbitron', sans-serif; }
+
+        .glass {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        #sidebar {
+            position: sticky;
+            top: 100px;
+            height: fit-content;
+            transition: all 0.3s ease;
+        }
+
+        .category-pill {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.2s;
+        }
+        .category-pill:hover { border-color: var(--primary); }
+        .category-pill.active {
+            background: var(--primary);
+            color: #000;
+            font-weight: bold;
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.4);
+        }
+
+        .product-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 20px -10px rgba(0, 242, 254, 0.3);
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #020617; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+        .cart-window-scroll { max-height: 50vh; overflow-y: auto; }
+    </style>
+</head>
+<body class="min-h-screen pb-10">
+
+    <!-- Navbar -->
+    <nav class="sticky top-0 z-50 glass px-6 py-4 mb-8">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-gradient-to-tr from-cyan-400 to-blue-600 rounded-lg flex items-center justify-center shadow-lg">
+                    <i class="fas fa-rocket text-black text-xl"></i>
+                </div>
+                <h1 class="header-font text-xl md:text-2xl font-extrabold tracking-tighter uppercase">
+                    LEVELUP<span class="text-cyan-400">STORE</span>
+                </h1>
+            </div>
+            <div class="hidden md:block text-sm text-slate-400 font-medium">
+                <i class="fa-solid fa-bolt text-yellow-400 mr-2"></i> RECARGAS INSTANTÁNEAS 24/7
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 grid lg:grid-cols-[280px_1fr] gap-8">
+        
+        <!-- Sidebar: Filtros y Búsqueda -->
+        <aside id="sidebar" class="glass rounded-3xl p-6 shadow-xl">
+            <div class="mb-8">
+                <h2 class="header-font text-sm uppercase tracking-widest text-cyan-400 mb-4">Buscar</h2>
+                <div class="relative">
+                    <input type="text" id="searchInput" oninput="renderProducts()" 
+                        placeholder="Juego o tarjeta..."
+                        class="w-full bg-slate-900 border border-slate-700 rounded-2xl py-3 pl-12 pr-4 focus:outline-none focus:border-cyan-400 transition-all text-white">
+                    <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"></i>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="header-font text-sm uppercase tracking-widest text-cyan-400 mb-4">Categorías</h3>
+                <div id="filterContainer" class="flex flex-col gap-2 max-h-[50vh] overflow-y-auto pr-2">
+                    <!-- Categorías dinámicas -->
+                </div>
+            </div>
+        </aside>
+
+        <!-- Grid de Productos -->
+        <section>
+            <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+                <!-- Productos dinámicos -->
+            </div>
+
+            <!-- Estado Vacío -->
+            <div id="emptyState" class="hidden text-center py-20 bg-slate-900/50 rounded-3xl border border-dashed border-slate-700">
+                <i class="fas fa-ghost text-5xl text-slate-700 mb-4"></i>
+                <p class="text-slate-400 text-xl font-medium">No encontramos lo que buscas.</p>
+                <button onclick="resetFilters()" class="mt-4 text-cyan-400 underline">Ver todos los productos</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Widget Flotante Carrito -->
+    <button id="cartWidgetBtn" onclick="toggleCartModal(true)" class="fixed right-6 bottom-6 z-50 flex items-center gap-4 rounded-full bg-cyan-500 px-6 py-4 text-black shadow-[0_0_20px_rgba(6,182,212,0.5)] hover:scale-105 transition-transform font-bold">
+        <div class="relative">
+            <i class="fas fa-shopping-cart text-xl"></i>
+            <span id="cartBadge" class="absolute -top-2 -right-2 bg-black text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center border-2 border-cyan-500">0</span>
+        </div>
+        <span id="cartTotalWidget" class="border-l border-black/20 pl-4">$0.00</span>
+    </button>
+
+    <!-- Modal del Carrito -->
+    <div id="cartModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+        <div class="glass w-full max-w-lg rounded-[2.5rem] overflow-hidden flex flex-col shadow-2xl border-cyan-500/20">
+            <div class="flex items-center justify-between p-6 border-b border-slate-800">
+                <h2 class="header-font text-xl font-bold text-white">Tu Pedido</h2>
+                <button onclick="toggleCartModal(false)" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-white hover:bg-red-500 transition">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div id="cartItems" class="cart-window-scroll p-6 space-y-4">
+                <!-- Items del carrito -->
+            </div>
+
+            <div class="p-6 bg-slate-900/50 border-t border-slate-800">
+                <div class="flex justify-between items-center mb-6">
+                    <span class="text-slate-400 font-medium">Total Estimado:</span>
+                    <span id="cartTotalModal" class="header-font text-2xl font-bold text-cyan-400">$0.00</span>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="clearCart()" class="flex-1 py-4 rounded-2xl bg-slate-800 font-bold hover:bg-slate-700 transition">VACIAR</button>
+                    <button onclick="sendCartWhatsApp()" class="flex-[2] py-4 rounded-2xl bg-cyan-500 text-black font-bold hover:bg-cyan-400 transition flex items-center justify-center gap-2">
+                        COMPRAR <i class="fa-brands fa-whatsapp text-lg"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // BASE DE DATOS
+        const products = [
+            ["Free Fire LATAM", "Diamantes", "110 Diamantes", 0.86636],
+            ["Free Fire LATAM", "Diamantes", "341 Diamantes", 2.59787],
+            ["Free Fire LATAM", "Diamantes", "572 Diamantes", 4.39109],
+            ["Free Fire LATAM", "Diamantes", "1166 Diamantes", 8.1554],
+            ["Free Fire LATAM", "Diamantes", "2398 Diamantes", 16.18738],
+            ["Free Fire LATAM", "Diamantes", "6160 Diamantes", 41.20413],
+            ["Free Fire LATAM", "Membresías", "Weekly Lite", 0.60137],
+            ["Free Fire LATAM", "Membresías", "Weekly Membership", 2.60392],
+            ["Free Fire LATAM", "Membresías", "Monthly Membership", 12.45332],
+            ["Free Fire LATAM", "Membresías", "Booyah Pass", 4.6585],
+            ["Mobile Legends Global", "Diamantes", "51 + 5 Diamantes", 0.9317],
+            ["Mobile Legends Global", "Diamantes", "102 + 10 Diamantes", 1.8513],
+            ["Mobile Legends Global", "Diamantes", "203 + 20 Diamantes", 3.7026],
+            ["Mobile Legends Global", "Diamantes", "303 + 33 Diamantes", 5.566],
+            ["Mobile Legends Global", "Diamantes", "504 + 66 Diamantes", 9.2686],
+            ["Mobile Legends Global", "Diamantes", "625 + 81 Diamantes", 11.2772],
+            ["Mobile Legends Global", "Diamantes", "1007 + 156 Diamantes", 18.5372],
+            ["Mobile Legends Global", "Diamantes", "2015 + 383 Diamantes", 37.0744],
+            ["Mobile Legends Global", "Diamantes", "3099 + 589 Diamantes", 56.9426],
+            ["Mobile Legends Global", "Diamantes", "5035 + 1007 Diamantes", 92.686],
+            ["Mobile Legends Global", "Pases", "Weekly Pass", 1.7908],
+            ["PUBG Mobile", "UC", "60 UC", 1.089],
+            ["PUBG Mobile", "UC", "325 UC", 5.4934],
+            ["Blood Strike", "Oro", "105 Oro", 0.9075],
+            ["Blood Strike", "Oro", "320 Oro", 2.7225],
+            ["Genshin Impact", "Bendición", "Bendición de la Luna", 5.9048],
+            ["Roblox US", "Gift Cards", "485 Robux", 5.3724],
+            ["Playstation US", "Gift Cards", "10 USD", 10.8174],
+            ["Steam USD", "Gift Cards", "10 USD", 13.0196],
+            ["Streaming", "Servicios", "Netflix Cuenta Completa", 11.495]
+        ].map((p, index) => ({
+            id: index,
+            category: p[0],
+            subcategory: p[1],
+            title: p[2],
+            price: p[3]
+        }));
+
+        let cart = [];
+        let currentCategory = "all";
+        const WHATSAPP_NUMBER = "593900000000"; // Cambia esto
+
+        // INICIALIZACIÓN
+        document.addEventListener('DOMContentLoaded', () => {
+            renderCategories();
+            renderProducts();
+        });
+
+        // RENDER CATEGORÍAS
+        function renderCategories() {
+            const container = document.getElementById('filterContainer');
+            const categories = ['all', ...new Set(products.map(p => p.category))];
+            
+            container.innerHTML = categories.map(cat => `
+                <button onclick="setCategory('${cat}')" 
+                    class="category-pill px-4 py-3 rounded-xl text-xs uppercase tracking-wider text-left transition-all ${currentCategory === cat ? 'active' : 'text-slate-400'}">
+                    ${cat === 'all' ? 'Ver Todo' : cat}
+                </button>
+            `).join('');
+        }
+
+        function setCategory(cat) {
+            currentCategory = cat;
+            renderCategories();
+            renderProducts();
+        }
+
+        // RENDER PRODUCTOS
+        function renderProducts() {
+            const grid = document.getElementById('productGrid');
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const emptyState = document.getElementById('emptyState');
+
+            const filtered = products.filter(p => {
+                const matchCat = currentCategory === 'all' || p.category === currentCategory;
+                const matchSearch = p.title.toLowerCase().includes(search) || p.category.toLowerCase().includes(search);
+                return matchCat && matchSearch;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            grid.innerHTML = filtered.map(p => `
+                <div class="product-card glass rounded-[2rem] p-5 flex flex-col justify-between border border-slate-800">
+                    <div>
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="bg-cyan-500/10 text-cyan-400 text-[10px] font-bold px-3 py-1 rounded-full border border-cyan-500/20 uppercase">
+                                ${p.category}
+                            </span>
+                            <span class="text-slate-500 text-[10px] font-bold uppercase">${p.subcategory}</span>
+                        </div>
+                        <h3 class="text-lg font-bold text-white leading-tight mb-6">${p.title}</h3>
+                    </div>
+                    <div class="flex items-center justify-between mt-auto">
+                        <div>
+                            <p class="text-[10px] text-slate-500 font-bold uppercase">Precio</p>
+                            <p class="text-xl font-bold text-cyan-400">$${p.price.toFixed(2)}</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="directWhatsApp('${p.title}', '${p.category}', ${p.price})" class="w-10 h-10 rounded-xl bg-slate-800 text-white hover:bg-green-500 transition flex items-center justify-center">
+                                <i class="fa-brands fa-whatsapp"></i>
+                            </button>
+                            <button onclick="addToCart(${p.id})" class="px-4 h-10 rounded-xl bg-cyan-500 text-black font-bold hover:bg-cyan-400 transition text-sm">
+                                AGREGAR
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // LÓGICA DEL CARRITO
+        function addToCart(id) {
+            const product = products.find(p => p.id === id);
+            cart.push(product);
+            updateCartUI();
+            
+            // Animación feedback
+            const btn = document.getElementById('cartWidgetBtn');
+            btn.classList.add('scale-110');
+            setTimeout(() => btn.classList.remove('scale-110'), 200);
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCartUI();
+        }
+
+        function clearCart() {
+            cart = [];
+            updateCartUI();
+            toggleCartModal(false);
+        }
+
+        function updateCartUI() {
+            const badge = document.getElementById('cartBadge');
+            const totalWidget = document.getElementById('cartTotalWidget');
+            const totalModal = document.getElementById('cartTotalModal');
+            const cartItems = document.getElementById('cartItems');
+
+            badge.innerText = cart.length;
+            const total = cart.reduce((sum, p) => sum + p.price, 0);
+            totalWidget.innerText = `$${total.toFixed(2)}`;
+            totalModal.innerText = `$${total.toFixed(2)}`;
+
+            if (cart.length === 0) {
+                cartItems.innerHTML = `<p class="text-center text-slate-500 py-10">Tu carrito está vacío</p>`;
+            } else {
+                cartItems.innerHTML = cart.map((p, index) => `
+                    <div class="flex items-center justify-between bg-slate-900/50 p-4 rounded-2xl border border-slate-800">
+                        <div>
+                            <p class="text-white font-bold text-sm">${p.title}</p>
+                            <p class="text-cyan-400 text-xs font-bold">$${p.price.toFixed(2)}</p>
+                        </div>
+                        <button onclick="removeFromCart(${index})" class="text-slate-500 hover:text-red-500 p-2">
+                            <i class="fas fa-trash-can"></i>
+                        </button>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function toggleCartModal(show) {
+            const modal = document.getElementById('cartModal');
+            if (show) modal.classList.remove('hidden');
+            else modal.classList.add('hidden');
+        }
+
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            setCategory('all');
+        }
+
+        // WHATSAPP
+        function sendCartWhatsApp() {
+            if (cart.length === 0) return;
+
+            let message = "🎮 *NUEVO PEDIDO - LEVELUPSTORE*\n\n";
+            cart.forEach((p, i) => {
+                message += `${i+1}. *${p.category}* - ${p.title} ($${p.price.toFixed(2)})\n`;
+            });
+            const total = cart.reduce((sum, p) => sum + p.price, 0);
+            message += `\n💰 *TOTAL A PAGAR: $${total.toFixed(2)} USD*`;
+            
+            window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank');
+        }
+
+        function directWhatsApp(title, category, price) {
+            const message = `¡Hola! Me interesa comprar este producto:\n\n*Juego:* ${category}\n*Producto:* ${title}\n*Precio:* $${price.toFixed(2)} USD`;
+            window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank');
+        }
+    </script>
+</body>
+</html>
