@@ -182,7 +182,7 @@
                 ]);
                 
                 // Procesar Categorías con Normalización Estricta
-                resCats.split(/\r?\n/).slice(1).forEach(row => {
+                resCats.split(/\r?\n/).forEach(row => {
                     const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/"/g, '').trim());
                     if(cols[0]) {
                         // Limpieza de espacios dobles y normalización
