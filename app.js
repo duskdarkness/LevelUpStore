@@ -2,7 +2,7 @@
 const WHATSAPP_NUMBER = "593900000000";
 const PRODS_URL = "https://docs.google.com/spreadsheets/d/1FcKvXhbHrASVvqBFU_EYtpiMtlMo4QnfV33aeRM-rRM/gviz/tq?tqx=out:csv";
 const CATS_URL = "https://docs.google.com/spreadsheets/d/1u2Ut3bovjOh7BWljQ-ZTaWp5KM7upkzsvxZqeydZIMA/gviz/tq?tqx=out:csv";
-const APPS_SCRIPT_URL = "TU_URL_DE_APPS_SCRIPT_AQUI"; // Para el registro de pedidos
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx85fE0vWUXR7yD_x-9loITu_hDyCvVmfgE6SqxeWyly2wjv2ie7R2DhKPdHXVviwgDyg/exec"; // Para el registro de pedidos
 
 let db_products = [];
 let db_categories = {}; // Guardará { "Nombre": "URL_Imagen" }
