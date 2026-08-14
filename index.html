@@ -92,7 +92,24 @@
             display: none; box-shadow: 0 15px 40px rgba(0,0,0,0.8);
         }
         .cart-popup.active { display: block; }
-        .cart-items-list { max-height: 250px; overflow-y: auto; margin: 15px 0; }
+        .cart-items-list { 
+            max-height: 300px; 
+            overflow-y: auto; 
+            margin: 15px 0; 
+            padding-right: 10px; /* Espacio para que la barra no pise los botones */
+        }
+
+        /* Estilo para que la barra de desplazamiento sea más elegante y fina */
+        .cart-items-list::-webkit-scrollbar {
+            width: 5px;
+        }
+        .cart-items-list::-webkit-scrollbar-track {
+            background: #0d121c;
+        }
+        .cart-items-list::-webkit-scrollbar-thumb {
+            background: var(--accent-cyan);
+            border-radius: 10px;
+        }
     </style>
 </head>
 <body>
@@ -318,7 +335,7 @@
                                 <button onclick="changeQty(${i.id}, -1)" style="width:24px; height:24px; background:#1a2233; color:white; border:1px solid #2d3b54; border-radius:5px; cursor:pointer;">-</button>
                                 <span style="font-weight:bold; min-width:15px; text-align:center;">${i.qty}</span>
                                 <button onclick="changeQty(${i.id}, 1)" style="width:24px; height:24px; background:#1a2233; color:white; border:1px solid #2d3b54; border-radius:5px; cursor:pointer;">+</button>
-                                <button onclick="removeItem(${i.id})" style="background:transparent; border:none; color:#ff4b4b; cursor:pointer; margin-left:5px;"><i class="fa-solid fa-trash-can"></i></button>
+                                <button onclick="removeItem(${i.id})" style="background:transparent; border:none; color:#ff4b4b; cursor:pointer; margin-left:8px; padding: 2px;"><i class="fa-solid fa-trash-can"></i></button>
                             </div>
                         </div>`;
                 }).join('');
