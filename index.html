@@ -47,31 +47,27 @@
 
         .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
 
-        /* SECCIONES ESPECIALES */
         .special-section { margin-bottom: 50px; }
-        .section-title { font-family: var(--font-title); color: var(--accent-cyan); margin-bottom: 20px; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
+        .section-title { font-family: var(--font-title); color: var(--accent-cyan); margin-bottom: 20px; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; text-transform: uppercase; }
 
         .horizontal-scroll { display: flex; gap: 20px; overflow-x: auto; padding-bottom: 15px; scrollbar-width: none; }
         .horizontal-scroll::-webkit-scrollbar { display: none; }
 
-        /* CATEGORÍAS */
         .category-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
         .category-card {
             height: 150px; border-radius: 20px; position: relative; overflow: hidden; cursor: pointer;
-            border: 1px solid #1e293b; transition: 0.3s;
+            border: 1px solid #1e293b; transition: 0.3s; background: #1a2233;
         }
         .category-card img { width: 100%; height: 100%; object-fit: cover; opacity: 0.6; transition: 0.5s; }
         .category-card:hover img { opacity: 1; transform: scale(1.1); }
         .category-card h2 {
             position: absolute; bottom: 15px; left: 15px; font-family: var(--font-title);
-            font-size: 14px; text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            font-size: 14px; text-shadow: 2px 2px 4px rgba(0,0,0,0.9); z-index: 2;
         }
 
-        /* PRODUCTOS */
         .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
         .product-card { background: var(--bg-card); border: 1px solid #1e293b; border-radius: 16px; padding: 20px; }
 
-        /* TOAST NOTIFICATION */
         .toast {
             position: fixed; top: 100px; right: 20px; background: var(--accent-cyan); color: #000;
             padding: 12px 25px; border-radius: 10px; font-weight: bold; transform: translateX(200%);
@@ -79,13 +75,11 @@
         }
         .toast.active { transform: translateX(0); }
 
-        /* CARRITO WIDGET */
         .cart-widget { position: fixed; bottom: 30px; right: 30px; z-index: 1000; }
         .cart-button {
             width: 65px; height: 65px; background: var(--accent-cyan); border-radius: 50%;
             display: flex; justify-content: center; align-items: center; cursor: pointer;
-            box-shadow: 0 10px 25px rgba(0, 242, 254, 0.4);
-            position: relative;
+            box-shadow: 0 10px 25px rgba(0, 242, 254, 0.4); position: relative;
         }
         .cart-badge {
             position: absolute; top: 0; right: 0; background: #ff3e3e; color: white;
@@ -112,7 +106,6 @@
     </header>
 
     <div class="container" id="app">
-        <!-- Skeleton Loader inicial -->
         <div class="special-section">
             <div class="skeleton" style="width: 200px; height: 30px; margin-bottom: 20px;"></div>
             <div class="horizontal-scroll">
@@ -143,7 +136,6 @@
     </div>
 
     <script>
-        // CONFIGURACIÓN
         const WHATSAPP_NUMBER = "593900000000";
         const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx85fE0vWUXR7yD_x-9loITu_hDyCvVmfgE6SqxeWyly2wjv2ie7R2DhKPdHXVviwgDyg/exec";
         const PRODS_URL = "https://docs.google.com/spreadsheets/d/1FcKvXhbHrASVvqBFU_EYtpiMtlMo4QnfV33aeRM-rRM/gviz/tq?tqx=out:csv";
@@ -153,12 +145,15 @@
         let db_categories = {};
         let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
-        // UTILIDADES
+        // --- MEJORA: EXTRACTOR DE ID DE GOOGLE DRIVE ---
         function getDirectImgLink(url) {
-            if (!url || url.trim() === "") return 'https://via.placeholder.com/400x250?text=LevelUp+Store';
+            if (!url || url.trim() === "") return 'https://via.placeholder.com/400x250?text=Sin+Imagen';
+            
             if (url.includes('drive.google.com')) {
-                const id = url.split('/d/')[1]?.split('/')[0] || url.split('id=')[1]?.split('&')[0];
-                return `https://lh3.googleusercontent.com/d/${id}`;
+                // Regex para extraer el ID sin importar el formato del link de Drive
+                const match = url.match(/\/d\/([a-zA-Z0-9_-]+)|id=([a-zA-Z0-9_-]+)/);
+                const id = match ? (match[1] || match[2]) : null;
+                if (id) return `https://lh3.googleusercontent.com/d/${id}`;
             }
             return url;
         }
@@ -169,18 +164,24 @@
             return parseFloat(cleaned) || 0;
         }
 
-        // CARGA
         async function init() {
             try {
-                const [resProds, resCats] = await Promise.all([fetch(PRODS_URL), fetch(CATS_URL)]);
+                const [resProds, resCats] = await Promise.all([
+                    fetch(PRODS_URL).then(r => r.text()),
+                    fetch(CATS_URL).then(r => r.text())
+                ]);
                 
-                const catsText = await resCats.text();
-                catsText.split('\n').slice(1).forEach(row => {
+                // Procesar Categorías con Normalización de Nombres
+                resCats.split('\n').slice(1).forEach(row => {
                     const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/"/g, '').trim());
-                    if(cols[0]) db_categories[cols[0]] = getDirectImgLink(cols[1]);
+                    if(cols[0]) {
+                        // Guardamos el nombre de la categoría en minúsculas y sin espacios para evitar errores de coincidencia
+                        const catKey = cols[0].toLowerCase().trim();
+                        db_categories[catKey] = getDirectImgLink(cols[1]);
+                    }
                 });
 
-                const prodsText = await resProds.text();
+                const prodsText = resProds;
                 db_products = prodsText.split('\n').slice(1).map((row, i) => {
                     const c = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/"/g, '').trim());
                     if(c.length >= 4) {
@@ -194,7 +195,6 @@
             } catch (e) { console.error("Error al iniciar", e); }
         }
 
-        // VISTAS
         function renderHome() {
             const app = document.getElementById('app');
             const offers = db_products.filter(p => p.cat.toUpperCase() === 'OFERTAS');
@@ -213,10 +213,13 @@
 
             html += `<h2 class="section-title">CATEGORÍAS</h2><div class="category-grid">`;
             mainCats.forEach(cat => {
-                const img = db_categories[cat] || 'https://via.placeholder.com/400x250?text=' + cat;
+                // Buscamos la imagen usando la llave normalizada
+                const catKey = cat.toLowerCase().trim();
+                const img = db_categories[catKey] || `https://via.placeholder.com/400x250?text=${cat}`;
+                
                 html += `
                     <div class="category-card" onclick="renderCategory('${cat}')">
-                        <img src="${img}" loading="lazy" onerror="this.src='https://via.placeholder.com/400x250?text=LevelUp'">
+                        <img src="${img}" loading="lazy" onerror="this.src='https://via.placeholder.com/400x250?text=${cat}'">
                         <h2>${cat}</h2>
                     </div>`;
             });
@@ -248,7 +251,6 @@
                 </div>`;
         }
 
-        // CARRITO
         function addToCart(id) {
             const p = db_products.find(prod => prod.id === id);
             const exist = cart.find(i => i.id === id);
