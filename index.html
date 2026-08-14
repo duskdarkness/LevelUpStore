@@ -87,29 +87,38 @@
             display: flex; justify-content: center; align-items: center;
         }
         .cart-popup {
-            position: absolute; bottom: 80px; right: 0; width: 320px; background: #0d121c;
+            position: absolute; bottom: 80px; right: 0; width: 350px; background: #0d121c;
             border: 1px solid var(--accent-cyan); border-radius: 20px; padding: 20px;
             display: none; box-shadow: 0 15px 40px rgba(0,0,0,0.8);
         }
         .cart-popup.active { display: block; }
+        
         .cart-items-list { 
             max-height: 300px; 
             overflow-y: auto; 
             margin: 15px 0; 
-            padding-right: 10px; /* Espacio para que la barra no pise los botones */
+            padding-right: 12px; /* Espacio para que el scroll no toque los botones */
         }
 
-        /* Estilo para que la barra de desplazamiento sea más elegante y fina */
-        .cart-items-list::-webkit-scrollbar {
-            width: 5px;
+        /* Barra de desplazamiento fina y elegante */
+        .cart-items-list::-webkit-scrollbar { width: 5px; }
+        .cart-items-list::-webkit-scrollbar-track { background: #0d121c; }
+        .cart-items-list::-webkit-scrollbar-thumb { background: var(--accent-cyan); border-radius: 10px; }
+
+        /* Estilo del Aviso de Confirmación Personalizado */
+        .confirm-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(5px);
+            display: none; justify-content: center; align-items: center; z-index: 3000;
         }
-        .cart-items-list::-webkit-scrollbar-track {
-            background: #0d121c;
+        .confirm-box {
+            background: var(--bg-card); border: 1px solid var(--accent-cyan);
+            padding: 30px; border-radius: 25px; text-align: center;
+            max-width: 320px; box-shadow: 0 0 30px rgba(0, 242, 254, 0.2);
         }
-        .cart-items-list::-webkit-scrollbar-thumb {
-            background: var(--accent-cyan);
-            border-radius: 10px;
-        }
+        .confirm-box p { font-family: var(--font-title); font-size: 14px; margin-bottom: 25px; color: #fff; }
+        .confirm-btns { display: flex; gap: 12px; }
+        .btn-confirm { flex: 1; padding: 12px; border-radius: 12px; border: none; cursor: pointer; font-weight: bold; font-family: var(--font-body); }
     </style>
 </head>
 <body>
@@ -151,7 +160,18 @@
             <div class="cart-badge" id="cartBadge">0</div>
         </div>
     </div>
-
+    
+<!-- Modal de Confirmación Personalizado -->
+    <div id="customConfirm" class="confirm-overlay">
+        <div class="confirm-box">
+            <p>¿ESTÁS SEGURO QUE DESEAS VACIAR EL CARRITO?</p>
+            <div class="confirm-btns">
+                <button onclick="actuallyClearCart()" class="btn-confirm" style="background: var(--accent-cyan); color: #000;">SÍ, VACIAR</button>
+                <button onclick="closeConfirm()" class="btn-confirm" style="background: #1a2233; color: #fff;">CANCELAR</button>
+            </div>
+        </div>
+    </div>
+    
     <script>
         const WHATSAPP_NUMBER = "593900000000";
         const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx85fE0vWUXR7yD_x-9loITu_hDyCvVmfgE6SqxeWyly2wjv2ie7R2DhKPdHXVviwgDyg/exec";
@@ -305,11 +325,23 @@
             updateCart();
         }
 
+        // Abre el aviso personalizado
         function clearCart() {
-            if(cart.length > 0 && confirm("¿Vaciar todo el carrito?")) {
-                cart = [];
-                updateCart();
+            if(cart.length > 0) {
+                document.getElementById('customConfirm').style.display = 'flex';
             }
+        }
+
+        // Ejecuta el vaciado real
+        function actuallyClearCart() {
+            cart = [];
+            updateCart();
+            closeConfirm();
+        }
+
+        // Cierra el aviso sin hacer nada
+        function closeConfirm() {
+            document.getElementById('customConfirm').style.display = 'none';
         }
 
         function updateCart() {
@@ -335,7 +367,7 @@
                                 <button onclick="changeQty(${i.id}, -1)" style="width:24px; height:24px; background:#1a2233; color:white; border:1px solid #2d3b54; border-radius:5px; cursor:pointer;">-</button>
                                 <span style="font-weight:bold; min-width:15px; text-align:center;">${i.qty}</span>
                                 <button onclick="changeQty(${i.id}, 1)" style="width:24px; height:24px; background:#1a2233; color:white; border:1px solid #2d3b54; border-radius:5px; cursor:pointer;">+</button>
-                                <button onclick="removeItem(${i.id})" style="background:transparent; border:none; color:#ff4b4b; cursor:pointer; margin-left:8px; padding: 2px;"><i class="fa-solid fa-trash-can"></i></button>
+                                <button onclick="removeItem(${i.id})" style="background:transparent; border:none; color:#ff4b4b; cursor:pointer; margin-left:12px; padding: 5px; font-size: 18px;"><i class="fa-solid fa-trash-can"></i></button>
                             </div>
                         </div>`;
                 }).join('');
