@@ -1,31 +1,59 @@
-// --- CONFIGURACIÓN DE ENLACES ---
-const WHATSAPP_NUMBER = "593900000000";
+// --- CONFIGURACIÓN ---
+const WHATSAPP_NUMBER = "593900000000"; // Tu número sin el +
 const PRODS_URL = "https://docs.google.com/spreadsheets/d/1FcKvXhbHrASVvqBFU_EYtpiMtlMo4QnfV33aeRM-rRM/gviz/tq?tqx=out:csv";
 const CATS_URL = "https://docs.google.com/spreadsheets/d/1u2Ut3bovjOh7BWljQ-ZTaWp5KM7upkzsvxZqeydZIMA/gviz/tq?tqx=out:csv";
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx85fE0vWUXR7yD_x-9loITu_hDyCvVmfgE6SqxeWyly2wjv2ie7R2DhKPdHXVviwgDyg/exec"; // Para el registro de pedidos
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx85fE0vWUXR7yD_x-9loITu_hDyCvVmfgE6SqxeWyly2wjv2ie7R2DhKPdHXVviwgDyg/exec"; 
 
 let db_products = [];
-let db_categories = {}; // Guardará { "Nombre": "URL_Imagen" }
+let db_categories = {}; 
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
-// --- INICIALIZACIÓN ---
+// --- UTILIDADES ---
+
+// Convierte enlaces de Google Drive en enlaces de imagen directos
+function getDirectImgLink(url) {
+    if (!url || url.trim() === "") return 'https://via.placeholder.com/400x250?text=LevelUp+Store';
+    if (url.includes('drive.google.com')) {
+        const id = url.split('/d/')[1]?.split('/')[0] || url.split('id=')[1]?.split('&')[0];
+        return `https://lh3.googleusercontent.com/d/${id}`;
+    }
+    return url;
+}
+
+// Limpia el precio del CSV para evitar el error NaN
+function cleanPrice(priceString) {
+    if (!priceString) return 0;
+    // Elimina espacios, símbolos de moneda y cambia coma por punto
+    const cleaned = priceString.toString().replace(/\s/g, '').replace(/[^0-9,.]/g, '').replace(',', '.');
+    return parseFloat(cleaned) || 0;
+}
+
+// --- CARGA DE DATOS ---
+
 async function init() {
     try {
-        const [resProds, resCats] = await Promise.all([fetch(PRODS_URL), fetch(CATS_URL)]);
+        const [resProds, resCats] = await Promise.all([
+            fetch(PRODS_URL).then(r => r.text()),
+            fetch(CATS_URL).then(r => r.text())
+        ]);
         
         // 1. Procesar Imágenes de Categorías
-        const catsText = await resCats.text();
-        catsText.split('\n').slice(1).forEach(row => {
+        resCats.split('\n').slice(1).forEach(row => {
             const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/"/g, '').trim());
-            if(cols[0]) db_categories[cols[0]] = cols[1];
+            if(cols[0]) db_categories[cols[0]] = getDirectImgLink(cols[1]);
         });
 
         // 2. Procesar Productos
-        const prodsText = await resProds.text();
-        db_products = prodsText.split('\n').slice(1).map((row, i) => {
+        db_products = resProds.split('\n').slice(1).map((row, i) => {
             const c = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/"/g, '').trim());
             if(c.length >= 4) {
-                return { id: i, cat: c[0], sub: c[1], name: c[2], price: parseFloat(c[3].replace(',','.')) || 0 };
+                return { 
+                    id: i, 
+                    cat: c[0], 
+                    sub: c[1], 
+                    name: c[2], 
+                    price: cleanPrice(c[3]) 
+                };
             }
             return null;
         }).filter(p => p && p.cat);
@@ -33,11 +61,13 @@ async function init() {
         renderHome();
         updateCart();
     } catch (e) {
-        document.getElementById('app').innerHTML = `<p style="text-align:center; padding:50px;">Error al cargar datos. Verifica la conexión.</p>`;
+        console.error("Error en init:", e);
+        document.getElementById('app').innerHTML = `<p style="text-align:center; padding:50px;">Error al conectar con la base de datos.</p>`;
     }
 }
 
-// --- NAVEGACIÓN Y RENDERIZADO ---
+// --- RENDERIZADO DE VISTAS ---
+
 function renderHome() {
     const app = document.getElementById('app');
     const offers = db_products.filter(p => p.cat.toUpperCase() === 'OFERTAS');
@@ -46,12 +76,12 @@ function renderHome() {
 
     let html = '';
 
-    // Seccion Ofertas
+    // Sección Ofertas
     if(offers.length > 0) {
         html += `<div class="special-section"><h2 class="section-title"><i class="fa-solid fa-fire"></i> OFERTAS</h2><div class="horizontal-scroll">${offers.map(p => renderMiniCard(p)).join('')}</div></div>`;
     }
 
-    // Seccion Más Vendidos
+    // Sección Más Vendidos
     if(bestSellers.length > 0) {
         html += `<div class="special-section"><h2 class="section-title"><i class="fa-solid fa-star"></i> MÁS VENDIDOS</h2><div class="horizontal-scroll">${bestSellers.map(p => renderMiniCard(p)).join('')}</div></div>`;
     }
@@ -59,10 +89,10 @@ function renderHome() {
     // Grid de Categorías
     html += `<h2 class="section-title">CATEGORÍAS</h2><div class="category-grid">`;
     categories.forEach(cat => {
-        const img = db_categories[cat] || 'https://via.placeholder.com/300x150?text=LevelUp';
+        const img = db_categories[cat] || 'https://via.placeholder.com/400x250?text=' + cat;
         html += `
             <div class="category-card" onclick="renderCategory('${cat}')">
-                <img src="${img}" loading="lazy">
+                <img src="${img}" onerror="this.src='https://via.placeholder.com/400x250?text=LevelUp'">
                 <h2>${cat}</h2>
             </div>`;
     });
@@ -79,21 +109,22 @@ function renderCategory(catName) {
         </div>
         <div class="products-grid">${filtered.map(p => renderMiniCard(p)).join('')}</div>`;
     document.getElementById('app').innerHTML = html;
+    window.scrollTo(0,0);
 }
 
 function renderMiniCard(p) {
     return `
-        <div class="product-card" style="min-width: 220px;">
+        <div class="product-card" style="min-width: 240px; flex: 1;">
             <div style="font-size:11px; color:var(--accent-cyan); font-weight:bold; text-transform:uppercase;">${p.sub}</div>
-            <div style="font-size:15px; margin: 10px 0; height: 35px; overflow:hidden; font-weight:bold;">${p.name}</div>
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-size:20px; font-weight:bold; color:white;">$${p.price.toFixed(2)}</span>
-                <button onclick="addToCart(${p.id})" style="background:var(--accent-cyan); border:none; padding:8px 12px; border-radius:8px; font-weight:bold; cursor:pointer;">+ AGREGAR</button>
+            <div style="font-size:15px; margin: 10px 0; height: 40px; overflow:hidden; font-weight:bold; color:white;">${p.name}</div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+                <span style="font-size:20px; font-weight:bold; color:var(--accent-cyan);">$${p.price.toFixed(2)}</span>
+                <button onclick="addToCart(${p.id})" style="background:var(--accent-cyan); color:black; border:none; padding:8px 12px; border-radius:8px; font-weight:bold; cursor:pointer;">+ AGREGAR</button>
             </div>
         </div>`;
 }
 
-// --- LÓGICA DEL CARRITO (LO QUE PEDISTE) ---
+// --- LÓGICA DEL CARRITO ---
 
 function addToCart(id) {
     const p = db_products.find(prod => prod.id === id);
@@ -119,7 +150,7 @@ function removeItem(id) {
 }
 
 function clearCart() {
-    if(confirm("¿Vaciar todo el carrito?")) {
+    if(cart.length > 0 && confirm("¿Vaciar todo el carrito?")) {
         cart = [];
         updateCart();
     }
@@ -131,58 +162,66 @@ function updateCart() {
     let total = 0;
     
     if(cart.length === 0) {
-        list.innerHTML = `<p style="text-align:center; color:gray; padding:20px;">Vacío</p>`;
+        list.innerHTML = `<p style="text-align:center; color:gray; padding:20px;">Tu carrito está vacío</p>`;
     } else {
         list.innerHTML = cart.map(i => {
-            total += i.price * i.qty;
+            const subtotal = i.price * i.qty;
+            total += subtotal;
             return `
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid #1e293b; padding-bottom:8px;">
-                    <div style="flex:1">
-                        <div style="font-size:13px; font-weight:bold; color:white;">${i.name}</div>
-                        <div style="font-size:11px; color:var(--accent-cyan);">$${(i.price * i.qty).toFixed(2)}</div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid #1e293b; padding-bottom:10px;">
+                    <div style="flex:1; padding-right:10px;">
+                        <div style="font-size:13px; font-weight:bold; color:white; line-height:1.2;">${i.name}</div>
+                        <div style="font-size:11px; color:var(--accent-cyan); margin-top:3px;">$${subtotal.toFixed(2)}</div>
                     </div>
                     <div style="display:flex; align-items:center; gap:8px;">
-                        <button onclick="changeQty(${i.id}, -1)" style="width:24px; height:24px; background:#1a2233; border:1px solid #2d3b54; color:white; border-radius:5px; cursor:pointer;">-</button>
-                        <span style="font-weight:bold; min-width:15px; text-align:center;">${i.qty}</span>
-                        <button onclick="changeQty(${i.id}, 1)" style="width:24px; height:24px; background:#1a2233; border:1px solid #2d3b54; color:white; border-radius:5px; cursor:pointer;">+</button>
-                        <button onclick="removeItem(${i.id})" style="background:transparent; border:none; color:#ff4b4b; cursor:pointer; margin-left:5px;"><i class="fa-solid fa-trash"></i></button>
+                        <button onclick="changeQty(${i.id}, -1)" style="width:26px; height:26px; background:#1a2233; border:1px solid #2d3b54; color:white; border-radius:5px; cursor:pointer;">-</button>
+                        <span style="font-weight:bold; min-width:15px; text-align:center; color:white;">${i.qty}</span>
+                        <button onclick="changeQty(${i.id}, 1)" style="width:26px; height:26px; background:#1a2233; border:1px solid #2d3b54; color:white; border-radius:5px; cursor:pointer;">+</button>
+                        <button onclick="removeItem(${i.id})" style="background:transparent; border:none; color:#ff4b4b; cursor:pointer; margin-left:5px; font-size:16px;"><i class="fa-solid fa-trash-can"></i></button>
                     </div>
                 </div>`;
         }).join('');
     }
     document.getElementById('cartTotal').innerText = `$${total.toFixed(2)}`;
-    // Badge opcional
+    
     const badge = document.getElementById('cartBadge');
     if(badge) badge.innerText = cart.reduce((s,i) => s + i.qty, 0);
 }
 
 function showToast(msg) {
     const t = document.getElementById('toast');
-    t.innerText = msg;
-    t.classList.add('active');
-    setTimeout(() => t.classList.remove('active'), 2000);
+    if(t) {
+        t.innerText = msg;
+        t.classList.add('active');
+        setTimeout(() => t.classList.remove('active'), 2500);
+    }
 }
 
-// --- FUNCIÓN DE ENVÍO (MANTIENE TU BOTÓN) ---
+// --- ENVÍO DE PEDIDO ---
+
 async function sendOrder() {
     if(cart.length === 0) return;
     const total = cart.reduce((s, i) => s + (i.price * i.qty), 0).toFixed(2);
     const pedidoString = cart.map(i => `${i.qty}x ${i.name}`).join(', ');
     const fecha = new Date().toLocaleString();
 
-    // Registro en Google Sheets (Apps Script)
-    try {
-        fetch(APPS_SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            body: JSON.stringify({ fecha, pedido: pedidoString, total })
-        });
-    } catch(e) {}
+    // Registro silencioso en Google Sheets (Opcional)
+    if(APPS_SCRIPT_URL !== "TU_URL_DE_APPS_SCRIPT_AQUI") {
+        try {
+            fetch(APPS_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify({ fecha, pedido: pedidoString, total })
+            });
+        } catch(e) { console.error("Error al registrar pedido"); }
+    }
 
-    let msg = `🚀 *PEDIDO - LevelUpStore*\n\n`;
+    let msg = `🚀 *NUEVO PEDIDO - LevelUpStore*\n\n`;
     cart.forEach(i => msg += `• ${i.qty}x ${i.name} ($${(i.price*i.qty).toFixed(2)})\n`);
-    msg += `\n💰 *TOTAL: $${total} USD*`;
+    msg += `\n💰 *TOTAL A PAGAR: $${total} USD*`;
+    
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
 }
 
+// Iniciar aplicación
 init();
