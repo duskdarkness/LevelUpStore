@@ -145,16 +145,26 @@
         let db_categories = {};
         let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
-        // --- MEJORA: EXTRACTOR DE ID DE GOOGLE DRIVE ---
+        // --- FUNCIÓN DE IMÁGENES MEJORADA (DRIVE + IMGUR) ---
         function getDirectImgLink(url) {
-            if (!url || url.trim() === "") return 'https://via.placeholder.com/400x250?text=Sin+Imagen';
-            
+            if (!url || url.trim() === "") return 'https://via.placeholder.com/400x250?text=LevelUp+Store';
+            url = url.trim();
+
+            // CASO 1: GOOGLE DRIVE
             if (url.includes('drive.google.com')) {
-                // Regex para extraer el ID sin importar el formato del link de Drive
                 const match = url.match(/\/d\/([a-zA-Z0-9_-]+)|id=([a-zA-Z0-9_-]+)/);
                 const id = match ? (match[1] || match[2]) : null;
                 if (id) return `https://lh3.googleusercontent.com/d/${id}`;
             }
+
+            // CASO 2: IMGUR (Convierte enlace de página a imagen directa)
+            if (url.includes('imgur.com') && !url.includes('i.imgur.com')) {
+                // Extrae el código después de la última barra
+                const parts = url.split('/');
+                const id = parts[parts.length - 1];
+                return `https://i.imgur.com/${id}.jpg`; // Forzamos jpg, Imgur suele resolverlo bien
+            }
+
             return url;
         }
 
@@ -171,18 +181,18 @@
                     fetch(CATS_URL).then(r => r.text())
                 ]);
                 
-                // Procesar Categorías con Normalización de Nombres
-                resCats.split('\n').slice(1).forEach(row => {
+                // Procesar Categorías con Normalización Estricta
+                resCats.split(/\r?\n/).slice(1).forEach(row => {
                     const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/"/g, '').trim());
                     if(cols[0]) {
-                        // Guardamos el nombre de la categoría en minúsculas y sin espacios para evitar errores de coincidencia
-                        const catKey = cols[0].toLowerCase().trim();
+                        // Limpieza de espacios dobles y normalización
+                        const catKey = cols[0].toLowerCase().trim().replace(/\s+/g, ' ');
                         db_categories[catKey] = getDirectImgLink(cols[1]);
                     }
                 });
 
                 const prodsText = resProds;
-                db_products = prodsText.split('\n').slice(1).map((row, i) => {
+                db_products = prodsText.split(/\r?\n/).slice(1).map((row, i) => {
                     const c = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/"/g, '').trim());
                     if(c.length >= 4) {
                         return { id: i, cat: c[0], sub: c[1], name: c[2], price: cleanPrice(c[3]) };
@@ -197,9 +207,12 @@
 
         function renderHome() {
             const app = document.getElementById('app');
-            const offers = db_products.filter(p => p.cat.toUpperCase() === 'OFERTAS');
-            const bestSellers = db_products.filter(p => p.cat.toUpperCase() === 'MAS VENDIDOS');
-            const mainCats = [...new Set(db_products.map(p => p.cat))].filter(c => !['OFERTAS', 'MAS VENDIDOS'].includes(c.toUpperCase()));
+            const offers = db_products.filter(p => p.cat.toLowerCase().trim() === 'ofertas');
+            const bestSellers = db_products.filter(p => p.cat.toLowerCase().trim() === 'mas vendidos');
+            const mainCats = [...new Set(db_products.map(p => p.cat))].filter(c => {
+                const normalized = c.toLowerCase().trim();
+                return normalized !== 'ofertas' && normalized !== 'mas vendidos';
+            });
 
             let html = '';
 
@@ -213,8 +226,7 @@
 
             html += `<h2 class="section-title">CATEGORÍAS</h2><div class="category-grid">`;
             mainCats.forEach(cat => {
-                // Buscamos la imagen usando la llave normalizada
-                const catKey = cat.toLowerCase().trim();
+                const catKey = cat.toLowerCase().trim().replace(/\s+/g, ' ');
                 const img = db_categories[catKey] || `https://via.placeholder.com/400x250?text=${cat}`;
                 
                 html += `
