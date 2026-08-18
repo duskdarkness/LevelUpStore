@@ -149,9 +149,20 @@
             <h3 style="font-family: var(--font-title); font-size: 14px; color: var(--accent-cyan);">TU CARRITO</h3>
             <div id="cartItems" class="cart-items-list"></div>
             <hr style="border: 0.5px solid #1e293b; margin: 15px 0;">
-            <div style="display:flex; justify-content:space-between; font-weight:bold; margin-bottom:15px;">
+           <div style="display:flex; justify-content:space-between; font-weight:bold; margin-bottom:12px;">
                 <span>TOTAL:</span><span id="cartTotal" style="color: var(--accent-cyan)">$0.00</span>
             </div>
+
+            <!-- Selector de Línea de Atención -->
+            <div style="margin-bottom: 12px;">
+                <label style="font-size: 11px; color: var(--accent-cyan); display: block; margin-bottom: 4px; font-weight: bold;">LÍNEA DE ATENCIÓN:</label>
+                <select id="numeroWhatsapp" style="width: 100%; background: #161e2e; color: white; border: 1px solid #2d3b54; padding: 8px 12px; border-radius: 10px; outline: none; font-weight: bold; font-size: 12px; cursor: pointer;">
+                    <option value="584241501322">Línea 1 (Ventas)</option>
+                    <option value="584247737314">Línea 2 (Pedidos)</option>
+                    <option value="584125039065">Línea 3 (Atención)</option>
+                </select>
+            </div>
+
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                 <button onclick="clearCart()" style="background:#1a2233; color:white; border:none; border-radius:10px; cursor:pointer; font-weight:bold; padding:10px;">VACIAR</button>
                 <button onclick="sendOrder()" style="padding:12px; background:var(--accent-cyan); color:black; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">PEDIR <i class="fa-brands fa-whatsapp"></i></button>
@@ -239,9 +250,18 @@
                     return null;
                 }).filter(p => p && p.cat);
 
-                renderHome();
+               renderHome();
                 updateCart();
+                updateLineSelector();
             } catch (e) { console.error("Error al iniciar", e); }
+        }
+
+        function updateLineSelector() {
+            const selectEl = document.getElementById('numeroWhatsapp');
+            if (selectEl) {
+                let lastIndex = parseInt(localStorage.getItem('lastWaLineIndex')) || 0;
+                selectEl.selectedIndex = lastIndex % selectEl.options.length;
+            }
         }
 
         function renderHome() {
@@ -380,10 +400,15 @@
 
         async function sendOrder() {
             if(cart.length === 0) return;
+
+            const selectEl = document.getElementById('numeroWhatsapp');
+            const numDestino = selectEl ? selectEl.value : "584120000001";
+
             const total = cart.reduce((s, i) => s + (i.price * i.qty), 0).toFixed(2);
             const pedidoString = cart.map(i => `${i.qty}x ${i.name}`).join(', ');
             const fecha = new Date().toLocaleString();
 
+            // Guardar pedido en Google Sheets
             try {
                 fetch(APPS_SCRIPT_URL, {
                     method: 'POST',
@@ -392,10 +417,21 @@
                 });
             } catch(e) {}
 
+            // Guardar rotación para el siguiente pedido
+            if (selectEl) {
+                let nextIndex = (selectEl.selectedIndex + 1) % selectEl.options.length;
+                localStorage.setItem('lastWaLineIndex', nextIndex);
+            }
+
+            // Enviar pedido por WhatsApp
             let msg = `🚀 *PEDIDO - LevelUpStore*\n\n📅 Fecha: ${fecha}\n\n`;
             cart.forEach(i => msg += `• ${i.qty}x ${i.name} ($${(i.price*i.qty).toFixed(2)})\n`);
             msg += `\n💰 *TOTAL: $${total} USD*`;
-            window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
+
+            window.open(`https://wa.me/${numDestino}?text=${encodeURIComponent(msg)}`, '_blank');
+
+            // Actualizar selector en pantalla al siguiente número
+            updateLineSelector();
         }
 
         init();
