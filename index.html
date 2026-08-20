@@ -404,10 +404,11 @@
             const numDestino = selectEl ? selectEl.value.trim() : "584241501322";
 
             const total = cart.reduce((s, i) => s + (i.price * i.qty), 0).toFixed(2);
-            const pedidoString = cart.map(i => `${i.qty}x ${i.name}`).join(', ');
+            // Incluye la Categoría en el registro para Google Sheets
+            const pedidoString = cart.map(i => `${i.qty}x [${i.cat}] ${i.name}`).join(', ');
             const fecha = new Date().toLocaleString();
 
-            // 1. Guardar pedido en Google Sheets
+            // 1. Guardar pedido detallado en Google Sheets
             try {
                 fetch(APPS_SCRIPT_URL, {
                     method: 'POST',
@@ -422,10 +423,14 @@
                 localStorage.setItem('lastWaLineIndex', nextIndex);
             }
 
-            // 3. Crear texto del pedido (Limpio y compatible con todos los navegadores)
-            let msg = `*PEDIDO - LevelUpStore*\n\nFecha: ${fecha}\n\n`;
-            cart.forEach(i => msg += `• ${i.qty}x ${i.name} ($${(i.price*i.qty).toFixed(2)})\n`);
-            msg += `\n*TOTAL A PAGAR: $${total} USD*`;
+            // 3. Crear texto del pedido DETALLADO con Juego / Categoría
+            let msg = `*PEDIDO - LevelUpStore*\n\n📅 Fecha: ${fecha}\n\n🛒 *DETALLE DEL PEDIDO:*\n`;
+            
+            cart.forEach(i => {
+                msg += `• *[${i.cat}]* ${i.qty}x ${i.name} ($${(i.price*i.qty).toFixed(2)})\n`;
+            });
+            
+            msg += `\n💰 *TOTAL A PAGAR: $${total} USD*`;
 
             // 4. Abrir WhatsApp sin bloqueos
             const waUrl = `https://wa.me/${numDestino}?text=${encodeURIComponent(msg)}`;
